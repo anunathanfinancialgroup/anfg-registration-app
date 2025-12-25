@@ -1,9 +1,3 @@
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*", // or set to your Vercel domain for stricter security
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 type Payload = {
@@ -29,8 +23,20 @@ function titleCase(x: string) {
   return x.charAt(0).toUpperCase() + x.slice(1);
 }
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 Deno.serve(async (req) => {
-  if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  if (req.method !== "POST") {
+    return new Response("Method not allowed", { status: 405, headers: corsHeaders });
+  }
 
   let body: Payload;
   try {
@@ -38,7 +44,7 @@ Deno.serve(async (req) => {
   } catch {
     return new Response(JSON.stringify({ ok: false, error: "Invalid JSON" }), {
       status: 400,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
@@ -52,7 +58,7 @@ Deno.serve(async (req) => {
   }
   if (!Array.isArray(body.preferred_days) || body.preferred_days.length === 0) missing.push("preferred_days");
   if (!isValidEmail(body.email)) return new Response(JSON.stringify({ ok: false, error: "Invalid email" }), {
-    status: 400, headers: { "Content-Type": "application/json" }
+    status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
   });
 
   const interestType = String(body.interest_type || "").toLowerCase();
@@ -61,19 +67,19 @@ Deno.serve(async (req) => {
 
   if (showEntrepreneurship && (!Array.isArray(body.business_opportunities) || body.business_opportunities.length === 0)) {
     return new Response(JSON.stringify({ ok: false, error: "Select at least one entrepreneurship option" }), {
-      status: 400, headers: { "Content-Type": "application/json" }
+      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   }
   if (showClient && (!Array.isArray(body.wealth_solutions) || body.wealth_solutions.length === 0)) {
     return new Response(JSON.stringify({ ok: false, error: "Select at least one wealth solution option" }), {
-      status: 400, headers: { "Content-Type": "application/json" }
+      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   }
 
   if (missing.length) {
     return new Response(JSON.stringify({ ok: false, error: `Missing: ${missing.join(", ")}` }), {
       status: 400,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
@@ -108,7 +114,7 @@ Deno.serve(async (req) => {
   if (dbErr) {
     return new Response(JSON.stringify({ ok: false, error: dbErr.message }), {
       status: 500,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
@@ -204,7 +210,7 @@ Deno.serve(async (req) => {
     const detail = await clientRes.text();
     return new Response(JSON.stringify({ ok: false, error: "Email failed", detail }), {
       status: 502,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
@@ -216,33 +222,6 @@ Deno.serve(async (req) => {
 
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
-    headers: { "Content-Type": "application/json" },
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
-});
-
-Deno.serve(async (req) => {
-  // ✅ CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
-
-  if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405, headers: corsHeaders });
-  }
-
-  try {
-    const body = await req.json();
-
-    // ... your existing logic ...
-
-    return new Response(JSON.stringify({ ok: true }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (e) {
-    return new Response(JSON.stringify({ ok: false, error: String(e) }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
 });
