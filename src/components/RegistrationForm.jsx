@@ -48,6 +48,8 @@ export default function RegistrationForm() {
 
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [emailSent, setEmailSent] = useState(true);
+  const [emailError, setEmailError] = useState("");
   const [error, setError] = useState("");
 
   const showEntrepreneurship = formData.interest_type === "entrepreneurship" || formData.interest_type === "both";
@@ -103,11 +105,6 @@ export default function RegistrationForm() {
         referred_by: formData.referred_by.trim(),
       };
 
-      if (!supabase) {
-        setError("App is not configured yet. Missing Supabase environment variables.");
-        return;
-      }
-      
       // Call Supabase Edge Function (server-side insert + email)
       const { data, error: fnError } = await supabase.functions.invoke("register", {
         body: payload,
@@ -387,7 +384,11 @@ export default function RegistrationForm() {
                 Registration submitted!
               </div>
               <p className="sub1" style={{ margin: 0 }}>
-                A confirmation email has been sent to <b>{formData.email}</b>.
+                {emailSent ? (
+                  <>A confirmation email has been sent to <b>{formData.email}</b>.</>
+                ) : (
+                  <>Registration submitted. We couldn’t send the confirmation email right now. We’ll contact you soon.</>
+                )}
               </p>
               <p className="sub2" style={{ marginTop: 10 }}>
                 We’ll contact you soon. Thank you for choosing CAN Financial Solutions.
