@@ -1,7 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
- 
-
 type Payload = {
   interest_type: string;
   business_opportunities: string[];
@@ -15,6 +13,40 @@ type Payload = {
   preferred_time: "AM" | "PM";
   referred_by: string;
 };
+
+const BUSINESS_OPPORTUNITY_LABELS: Record<string, string> = {
+  financial_freedom: "Financial and Time Freedom",
+  own_business: "Owning Your Own Business (No Business Experience Required)",
+  successful_entrepreneur: "Becoming a Successful Entrepreneur",
+  million_income: "Million Dollar Income (Dreamer)",
+};
+
+const WEALTH_SOLUTION_LABELS: Record<string, string> = {
+  protection_planning: "Protection Planning",
+  investment_planning: "Investment Planning",
+  lifetime_income: "Lifetime Income, Guaranteed Income Stream",
+  will_trust: "Will & Trust (W&T), Estate Planning",
+  college_tuition: "College Tuition Planning",
+  tax_optimization: "Tax Optimization",
+  retirement: "Retirement",
+  legacy: "Legacy",
+//  business_solutions: "Business Solutions (Entry/Exit, Key Person, etc.)",
+//  health_insurance: "Health Insurance, Medicare and Medicaid",
+// notary_services: "Notary Services",
+};
+
+function escapeHtml(input: string) {
+  return String(input ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function labelsFor(ids: string[] | null | undefined, labels: Record<string, string>) {
+  return (ids ?? []).map((id) => labels[id] ?? id);
+}
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
@@ -94,6 +126,7 @@ Deno.serve(async (req) => {
   const FROM_NAME = Deno.env.get("FROM_NAME") ?? "CAN Financial Solutions";
   const ADMIN_NOTIFY_EMAIL = Deno.env.get("ADMIN_NOTIFY_EMAIL") ?? "";
   const LOGO_URL = Deno.env.get("LOGO_URL") ?? "";
+  const BCC_EMAIL = Deno.env.get("BCC_EMAIL") ?? "canfinancialsolutions@gmail.com";
 
   const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
@@ -111,30 +144,7 @@ Deno.serve(async (req) => {
     preferred_time: body.preferred_time,
     referred_by: String(body.referred_by).trim(),
   };
-  const { data, error: dbErr } = await supabase
-  .from("client_registrations")
-  .insert(payloadToInsert)
-  .select("id, created_at")
-  .single();
 
-if (dbErr) {
-  return new Response(
-    JSON.stringify({
-      ok: false,
-      error: "Database insert failed",
-      detail: dbErr.message,
-      code: dbErr.code ?? null,
-    }),
-    {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    }
-  );
-}
-
-// Optional: use data.id later (admin email, logs, etc.)
-
-/*
   const { error: dbErr } = await supabase.from("client_registrations").insert(payloadToInsert);
   if (dbErr) {
     return new Response(JSON.stringify({ ok: false, error: dbErr.message }), {
@@ -142,7 +152,7 @@ if (dbErr) {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-*/
+
   const interestTypeFormatted =
     interestType === "both" ? "Both" : titleCase(interestType);
 
@@ -150,34 +160,34 @@ if (dbErr) {
   const htmlBody = `
 <!doctype html>
 <html>
-  <body style="font-family:Arial,Helvetica,sans-serif; color:#0f172a; line-height:1.6;">
+  <body style="font-family:Arial,Helvetica,sans-serif; color:#0f172a; line-height:1.2;">
     <div style="max-width:640px;margin:0 auto;padding:22px;">
       <div style="text-align:center;margin-bottom:18px;">
         ${LOGO_URL ? `<img src="${LOGO_URL}" alt="CAN Financial Solutions" style="max-width:160px;height:auto;margin-bottom:10px;" />` : ""}
         <h2 style="margin:0;">Registration Confirmation</h2>
-        <div style="color:#475569;font-size:13px;margin-top:6px;">Protecting your tomorrow</div>
+        <div style="color:#475569;font-size:13px;margin-top:6px;">We're excited to help you achieve your financial goals!</div>
       </div>
 
-      <p>Dear <b>${payloadToInsert.first_name} ${payloadToInsert.last_name}</b>,</p>
-      <p>Thank you for registering with <b>${FROM_NAME}</b>. We received your information and will contact you shortly.</p>
+      <p>Dear <b>${escapeHtml(payloadToInsert.first_name)} ${escapeHtml(payloadToInsert.last_name)}</b>,</p>
+      <p>Thank you for registering with <b>${FROM_NAME}</b>.Thank you for registering with CAN Financial Solutions. We received your information and will contact you shortly.</p>
 
       <div style="background:#f8fafc;border-left:4px solid #14b8a6;padding:12px 14px;border-radius:10px;">
         <div style="font-weight:bold;margin-bottom:6px;">Summary</div>
         <div><b>Interested In:</b> ${interestTypeFormatted}</div>
         <div><b>Preferred Days:</b> ${(payloadToInsert.preferred_days || []).join(", ")}</div>
         <div><b>Preferred Time:</b> ${payloadToInsert.preferred_time}</div>
-        <div><b>Referred By:</b> ${payloadToInsert.referred_by}</div>
+        <div><b>Referred By:</b> ${escapeHtml(payloadToInsert.referred_by)}</div>
       </div>
 
-      <p style="margin-top:16px;"><b>Phone:</b> ${payloadToInsert.phone}<br/>
-      <b>Email:</b> ${payloadToInsert.email}${payloadToInsert.profession ? `<br/><b>Profession:</b> ${payloadToInsert.profession}` : ""}</p>
+      <p style="margin-top:16px;"><b>Phone:</b> ${escapeHtml(payloadToInsert.phone)}<br/>
+      <b>Email:</b> ${escapeHtml(payloadToInsert.email)}${payloadToInsert.profession ? `<br/><b>Profession:</b> ${escapeHtml(payloadToInsert.profession)}` : ""}</p>
 
       ${
         showEntrepreneurship
           ? `<div style="margin-top:16px;">
               <div style="font-weight:bold;">Entrepreneurship - Business Opportunity</div>
               <ul style="margin:8px 0 0 18px;">
-                ${(payloadToInsert.business_opportunities || []).map((x) => `<li>${x}</li>`).join("")}
+                ${labelsFor(payloadToInsert.business_opportunities, BUSINESS_OPPORTUNITY_LABELS).map((x) => `<li>${escapeHtml(x)}</li>`).join("")}
               </ul>
             </div>`
           : ""
@@ -188,7 +198,7 @@ if (dbErr) {
           ? `<div style="margin-top:16px;">
               <div style="font-weight:bold;">Client - Wealth Building Solutions</div>
               <ul style="margin:8px 0 0 18px;">
-                ${(payloadToInsert.wealth_solutions || []).map((x) => `<li>${x}</li>`).join("")}
+                ${labelsFor(payloadToInsert.wealth_solutions, WEALTH_SOLUTION_LABELS).map((x) => `<li>${escapeHtml(x)}</li>`).join("")}
               </ul>
             </div>`
           : ""
@@ -214,7 +224,7 @@ if (dbErr) {
           {
             From: { Email: FROM_EMAIL, Name: FROM_NAME },
             To: [{ Email: toEmail, Name: toName }],
-            ReplyTo:[{ Email: FROM_EMAIL, Name: FROM_NAME } ],
+            ...(BCC_EMAIL ? { Bcc: [{ Email: BCC_EMAIL, Name: "CAN Financial Solutions" }] } : {}),
             Subject: subject,
             HTMLPart: html,
           },
@@ -227,24 +237,18 @@ if (dbErr) {
   // Email to client
   const clientRes = await sendMail(
     payloadToInsert.email,
-    `${payloadToInsert.first_name} ${payloadToInsert.last_name}`,
+    `${escapeHtml(payloadToInsert.first_name)} ${escapeHtml(payloadToInsert.last_name)}`,
     "Registration Confirmation - CAN Financial Solutions",
     htmlBody
   );
 
-if (!clientRes.ok) {
-  const detail = await clientRes.text();
-  // ✅ submission saved, but email failed
-  return new Response(JSON.stringify({ ok: true, email_sent: false, email_error: detail }), {
-    status: 200,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
-
-return new Response(JSON.stringify({ ok: true, email_sent: true }), {
-  status: 200,
-  headers: { ...corsHeaders, "Content-Type": "application/json" },
-});
+  if (!clientRes.ok) {
+    const detail = await clientRes.text();
+    return new Response(JSON.stringify({ ok: false, error: "Email failed", detail }), {
+      status: 502,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   // Optional admin notification
   if (ADMIN_NOTIFY_EMAIL) {
