@@ -5,7 +5,7 @@ import { supabase } from "../lib/supabaseClient.js";
 import logo from "../assets/logo.png";
 
 const BUSINESS_OPPORTUNITIES = [
-  { id: "financial_freedom", label: "Financial and/or Time Freedom" },
+  { id: "financial_freedom", label: "Financial and Time Freedom" },
   { id: "own_business", label: "Owning Your Own Business (No Business Experience Required)" },
   { id: "successful_entrepreneur", label: "Becoming a Successful Entrepreneur" },
   { id: "million_income", label: "Million Dollar Income (Dreamer)" },
@@ -15,14 +15,14 @@ const WEALTH_SOLUTIONS = [
   { id: "protection_planning", label: "Protection Planning" },
   { id: "investment_planning", label: "Investment Planning" },
   { id: "college_tuition", label: "College Tuition Planning" },
+  { id: "lifetime_income", label: "Lifetime Income, Guaranteed Income Stream" },
+  { id: "will_trust", label: "Will & Trust (W&T), Estate Planning" },
   { id: "tax_optimization", label: "Tax Optimization" },
   { id: "retirement", label: "Retirement" },
   { id: "legacy", label: "Legacy" },
-  { id: "lifetime_income", label: "Lifetime Income, Guaranteed Income Stream" },
-  { id: "will_trust", label: "Will & Trust (W&T), Estate Planning" },
-  { id: "business_solutions", label: "Business Solutions (Entry/Exit, Key Person, etc.)" },
-  { id: "health_insurance", label: "Health Insurance, Medicare and Medicaid" },
-  { id: "notary_services", label: "Notary Services" },
+ // { id: "business_solutions", label: "Business Solutions (Entry/Exit, Key Person, etc.)" },
+ // { id: "health_insurance", label: "Health Insurance, Medicare and Medicaid" },
+ // { id: "notary_services", label: "Notary Services" },
 ];
 
 const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
@@ -137,9 +137,9 @@ export default function RegistrationForm() {
             >
               <div className="cardHeader">
                 <img className="logo" src={logo} alt="CAN Financial Solutions" />
-                <div className="h1">Client Registration</div>
-                <p className="sub1">We are excited to help you achieve your financial dreams!</p>
-                <p className="sub2">Helping You Plan Confidently for Your Financial Future</p>
+                <div className="h1">Get Started — Registration</div>
+                <p className="sub1">We're excited to help you achieve your financial goals!</p>
+          //      <p className="sub2">Helping You Plan Confidently for Your Financial Future</p>
               </div>
 
               <form className="cardBody" onSubmit={handleSubmit}>
@@ -381,17 +381,17 @@ export default function RegistrationForm() {
             >
               <CheckCircle2 className="successIcon" />
               <div className="h1" style={{ fontSize: 28, margin: "6px 0 8px" }}>
-                Registration submitted!
+                You're all set — your registration is submitted!
               </div>
               <p className="sub1" style={{ margin: 0 }}>
                 {emailSent ? (
                   <>A confirmation email has been sent to <b>{formData.email}</b>.</>
                 ) : (
-                  <>Registration submitted. We couldn’t send the confirmation email right now. We’ll contact you soon.</>
+                  <>Registration received! We weren't able to send your confirmation email at the moment, but we'll reach out to you soon.</>
                 )}
               </p>
               <p className="sub2" style={{ marginTop: 10 }}>
-                We’ll contact you soon. Thank you for choosing CAN Financial Solutions.
+                We'll reach out to you soon. Thanks for choosing CAN Financial Solutions!
               </p>
             </motion.div>
           )}
