@@ -140,8 +140,7 @@ export default function RegistrationForm() {
                 <div className="h1">Get Started - Registration</div>
                 <p className="sub1">We're excited to help you achieve your financial goals!</p>
                 <p className="sub2">Are you interested in becoming a successful entrepreneur and building your own business?</p>
-                <p className="sub2">✅ Want to be your own boss?</p>
-                <p className="sub2">✅ Looking for a flexible career with unlimited growth potential?</p>
+                <p className="sub2">✅ Want to be your own boss? ✅ Looking for a flexible career with unlimited growth potential?</p>
                 <p className="sub2"> Join our team and start your journey toward financial independence! </p>
               </div>
 
