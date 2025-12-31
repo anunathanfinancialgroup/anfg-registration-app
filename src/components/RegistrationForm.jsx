@@ -103,6 +103,8 @@ export default function RegistrationForm() {
         last_name: formData.last_name.trim(),
         profession: formData.profession.trim(),
         referred_by: formData.referred_by.trim(),
+         // NEW: admin notification target
+		admin_notify_email: ADMIN_NOTIFY_EMAIL,
       };
 
       // Call Supabase Edge Function (server-side insert + email)
