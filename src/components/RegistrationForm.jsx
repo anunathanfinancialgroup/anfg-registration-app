@@ -4,8 +4,6 @@ import { CheckCircle2, Loader2 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient.js";
 import logo from "../assets/logo.png";
 
-const ADMIN_NOTIFY_EMAIL = "chidam.alagar@gmail.com";
-
 const BUSINESS_OPPORTUNITIES = [
   { id: "financial_freedom", label: "Financial and Time Freedom" },
   { id: "own_business", label: "Owning Your Own Business (No Business Experience Required)" },
@@ -105,8 +103,6 @@ export default function RegistrationForm() {
         last_name: formData.last_name.trim(),
         profession: formData.profession.trim(),
         referred_by: formData.referred_by.trim(),
-         // NEW: admin notification target
-		admin_notify_email: ADMIN_NOTIFY_EMAIL,
       };
 
       // Call Supabase Edge Function (server-side insert + email)
