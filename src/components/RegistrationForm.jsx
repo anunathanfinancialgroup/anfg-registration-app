@@ -387,7 +387,7 @@ export default function RegistrationForm() {
               </div>
               <p className="sub1" style={{ margin: 0 }}>
                 {emailSent ? (
-                  <>A confirmation email has been sent to <b>{formData.email}</b>. 
+                  <>A confirmation email has been sent to <b>{formData.email}</b>.</>
                   <>Please check your inbox or spam folder for the confirmation email. Thank you!</>
                 ) : (
                   <>Registration received! We weren't able to send your confirmation email at the moment, but we'll reach out to you soon.</>
