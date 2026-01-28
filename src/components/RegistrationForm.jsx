@@ -159,7 +159,7 @@ export default function RegistrationForm() {
                   <p className="sub2 text-sm md:text-base text-slate-800 text-center">
                     ✅ <b>Be your own boss</b> ✅ <b>Flexible schedule</b> ✅ <b>Unlimited income potential</b> ✅ <b>Make an impact</b>
                   </p>
-                 
+                </div>
               </div>
 
               <form className="cardBody" onSubmit={handleSubmit}>
@@ -199,16 +199,16 @@ export default function RegistrationForm() {
                     </div>
 
                     {showEntrepreneurship ? (
-                      <div className="flex flex-col space-y-2">
+                      <div className="flex flex-col space-y-3">
                         {BUSINESS_OPPORTUNITIES.map((o) => (
-                          <label className="flex items-start gap-2 cursor-pointer text-sm md:text-base" key={o.id}>
+                          <label className="flex items-start gap-3 cursor-pointer text-sm md:text-base" key={o.id}>
                             <input
                               type="checkbox"
-                              className="mt-1 h-4 w-4 md:h-5 md:w-5 flex-shrink-0"
+                              className="mt-0.5 h-5 w-5 flex-shrink-0 accent-green-600"
                               checked={formData.business_opportunities.includes(o.id)}
                               onChange={() => toggleArray("business_opportunities", o.id)}
                             />
-                            <span className="leading-snug">{o.label}</span>
+                            <span className="leading-relaxed text-left">{o.label}</span>
                           </label>
                         ))}
                       </div>
@@ -223,16 +223,16 @@ export default function RegistrationForm() {
                     </div>
 
                     {showClient ? (
-                      <div className="flex flex-col space-y-2">
+                      <div className="flex flex-col space-y-3">
                         {WEALTH_SOLUTIONS.map((o) => (
-                          <label className="flex items-start gap-2 cursor-pointer text-sm md:text-base" key={o.id}>
+                          <label className="flex items-start gap-3 cursor-pointer text-sm md:text-base" key={o.id}>
                             <input
                               type="checkbox"
-                              className="mt-1 h-4 w-4 md:h-5 md:w-5 flex-shrink-0"
+                              className="mt-0.5 h-5 w-5 flex-shrink-0 accent-green-600"
                               checked={formData.wealth_solutions.includes(o.id)}
                               onChange={() => toggleArray("wealth_solutions", o.id)}
                             />
-                            <span className="leading-snug">{o.label}</span>
+                            <span className="leading-relaxed text-left">{o.label}</span>
                           </label>
                         ))}
                       </div>
