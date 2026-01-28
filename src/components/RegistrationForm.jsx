@@ -152,7 +152,7 @@ export default function RegistrationForm() {
                  <p className="sub2 text-base md:text-lg text-slate-700 mb-6">
                   At <b>CAN Care & Advancement Network</b>, you'll help families secure their tomorrow while advancing your own career with unlimited potential.
                 </p>
-
+             </div>
                 {/* Benefits Section - FIXED: Now properly centered */}
                 <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 mb-6 mx-auto max-w-4xl">
                   <p className="sub2 text-sm md:text-base text-slate-800 text-center">
