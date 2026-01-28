@@ -95,40 +95,26 @@ export default function RegistrationForm() {
     try {
       setSubmitting(true);
 
-      // Check if supabase is initialized
-      if (!supabase) {
-        throw new Error("Database connection not available. Please ensure your environment variables are set.");
-      }
-
       const payload = {
-        interest_type: formData.interest_type,
-        business_opportunities: formData.business_opportunities,
-        wealth_solutions: formData.wealth_solutions,
+        ...formData,
+        // normalize
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
         first_name: formData.first_name.trim(),
         last_name: formData.last_name.trim(),
-        phone: formData.phone.trim(),
-        email: formData.email.trim(),
         profession: formData.profession.trim(),
-        preferred_days: formData.preferred_days,
-        preferred_time: formData.preferred_time,
         referred_by: formData.referred_by.trim(),
       };
 
-      // FIXED: Direct database insert instead of Edge Function
-      // This avoids the "Cannot read properties of null (reading 'functions')" error
-      const { data, error: insertError } = await supabase
-        .from("client_registrations")
-        .insert([payload])
-        .select();
+      // Call Supabase Edge Function (server-side insert + email)
+      const { data, error: fnError } = await supabase.functions.invoke("register", {
+        body: payload,
+      });
 
-      if (insertError) {
-        throw insertError;
-      }
+      if (fnError) throw fnError;
+      if (!data?.ok) throw new Error(data?.error || "Submission failed.");
 
-      // Success
       setSubmitted(true);
-      setEmailSent(true);
-      
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(err);
@@ -150,31 +136,27 @@ export default function RegistrationForm() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              <div className="cardHeader">
-                 <img src={logo} alt="CAN Care & Advancement Network" className="h-14 md:h-16 mx-auto mb-4" />
-            <div className="h1 text-2xl md:text-3xl font-bold text-slate-900 mb-4">Get Started - Registration</div>
-            <p className="sub1 text-xl md:text-2xl font-semibold text-green-600 mb-4">
-              <b>Welcome to CAN Care & Advancement Network</b>
-            </p>
-            <p className="sub2 text-base md:text-lg text-slate-700 mb-4">
-              We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
-            </p>
-            <p className="sub2 text-base md:text-lg font-semibold text-slate-800 mb-4">
-              <b>Are you ready to make a real difference while building your future?</b>
-            </p>
-            <p className="sub2 text-base md:text-lg text-slate-700 mb-6">
-              At CAN Care & Advancement Network, you'll help families secure their tomorrow while advancing your own career with unlimited potential.
-            </p>
-          </div>
-
-          {/* Benefits Section */}
-          <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 mb-6">
-              <div className="space-y-3">
-                <p className="sub2 text-sm md:text-base text-slate-800 text-center">
-                ✅ <b>Be your own boss</b> ✅ <b>Flexible schedule</b> ✅ <b>Unlimited income potential</b> ✅ <b>Make an impact</b>
+              <div className="cardHeader text-center">
+                <img src={logo} alt="CAN Care & Advancement Network" className="h-20 md:h-24 w-auto mx-auto mb-4 object-contain max-w-full" style={{ maxHeight: "96px" }} />
+                <div className="h1 text-2xl md:text-3xl font-bold text-slate-900 mb-4">Get Started - Registration</div>
+                <p className="sub1 text-xl md:text-2xl font-semibold text-green-600 mb-4">
+                  <b>Welcome to CAN Care & Advancement Network</b>
                 </p>
+                <p className="sub2 text-base md:text-lg text-slate-700 mb-4">
+                  We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
+                </p>
+                <p className="sub2 text-base md:text-lg text-slate-700 mb-6">
+                  At CAN Care & Advancement Network, you'll help families secure their tomorrow while advancing your own career with unlimited potential.
+                </p>
+                {/* Benefits Section */}
+                <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 mb-6 mx-auto max-w-4xl">
+                  <p className="sub2 text-sm md:text-base text-slate-800 text-center">
+                    ✅ <b>Be your own boss</b> ✅ <b>Flexible schedule</b> ✅ <b>Unlimited income potential</b> ✅ <b>Make an impact</b>
+                  </p>
+                </div>
               </div>
-            </div>
+
+
               <form className="cardBody" onSubmit={handleSubmit}>
                 {/* Interest */}
                 <div className="section">
@@ -201,7 +183,7 @@ export default function RegistrationForm() {
                     ))}
                   </div>
 
-                  <div className="help">Choose one. Selecting "Both" shows both sections.</div>
+                  <div className="help">Choose one. Selecting “Both” shows both sections.</div>
                 </div>
 
                 {/* Opportunities + Wealth */}
@@ -212,23 +194,20 @@ export default function RegistrationForm() {
                     </div>
 
                     {showEntrepreneurship ? (
-                      <div className="w-full">
-                        <div className="flex flex-col gap-3">
-                          {BUSINESS_OPPORTUNITIES.map((o) => (
-                            <label className="flex items-start gap-3 cursor-pointer text-sm md:text-base w-full" key={o.id}>
-                              <input
-                                type="checkbox"
-                                className="mt-0.5 h-5 w-5 flex-shrink-0 accent-green-600"
-                                checked={formData.business_opportunities.includes(o.id)}
-                                onChange={() => toggleArray("business_opportunities", o.id)}
-                              />
-                              <span className="leading-relaxed text-left flex-1">{o.label}</span>
-                            </label>
-                          ))}
-                        </div>
+                      <div className="choices">
+                        {BUSINESS_OPPORTUNITIES.map((o) => (
+                          <label className="pill" key={o.id}>
+                            <input
+                              type="checkbox"
+                              checked={formData.business_opportunities.includes(o.id)}
+                              onChange={() => toggleArray("business_opportunities", o.id)}
+                            />
+                            {o.label}
+                          </label>
+                        ))}
                       </div>
                     ) : (
-                      <div className="help">Select "Entrepreneurship" or "Both" above to enable this section.</div>
+                      <div className="help">Select “Entrepreneurship” or “Both” above to enable this section.</div>
                     )}
                   </div>
 
@@ -238,23 +217,20 @@ export default function RegistrationForm() {
                     </div>
 
                     {showClient ? (
-                      <div className="w-full">
-                        <div className="flex flex-col gap-3">
-                          {WEALTH_SOLUTIONS.map((o) => (
-                            <label className="flex items-start gap-3 cursor-pointer text-sm md:text-base w-full" key={o.id}>
-                              <input
-                                type="checkbox"
-                                className="mt-0.5 h-5 w-5 flex-shrink-0 accent-green-600"
-                                checked={formData.wealth_solutions.includes(o.id)}
-                                onChange={() => toggleArray("wealth_solutions", o.id)}
-                              />
-                              <span className="leading-relaxed text-left flex-1">{o.label}</span>
-                            </label>
-                          ))}
-                        </div>
+                      <div className="choices">
+                        {WEALTH_SOLUTIONS.map((o) => (
+                          <label className="pill" key={o.id}>
+                            <input
+                              type="checkbox"
+                              checked={formData.wealth_solutions.includes(o.id)}
+                              onChange={() => toggleArray("wealth_solutions", o.id)}
+                            />
+                            {o.label}
+                          </label>
+                        ))}
                       </div>
                     ) : (
-                      <div className="help">Select "Client" or "Both" above to enable this section.</div>
+                      <div className="help">Select “Client” or “Both” above to enable this section.</div>
                     )}
                   </div>
                 </div>
