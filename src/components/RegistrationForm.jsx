@@ -137,7 +137,7 @@ export default function RegistrationForm() {
               transition={{ duration: 0.2 }}
             >
               <div className="cardHeader">
-                 <img src="/can-logo.png" alt="CAN Care & Advancement Network" className="h-14 md:h-16 mx-auto mb-4" />
+                 <img src="/assets/can-logo.png" alt="CAN Care & Advancement Network" className="h-14 md:h-16 mx-auto mb-4" />
             <div className="h1 text-2xl md:text-3xl font-bold text-slate-900 mb-4">Get Started - Registration</div>
             <p className="sub1 text-xl md:text-2xl font-semibold text-green-600 mb-4">
               <b>Welcome to CAN Care & Advancement Network</b>
