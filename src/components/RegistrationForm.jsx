@@ -199,18 +199,20 @@ export default function RegistrationForm() {
                     </div>
 
                     {showEntrepreneurship ? (
-                      <div className="flex flex-col space-y-3">
-                        {BUSINESS_OPPORTUNITIES.map((o) => (
-                          <label className="flex items-start gap-3 cursor-pointer text-sm md:text-base" key={o.id}>
-                            <input
-                              type="checkbox"
-                              className="mt-0.5 h-5 w-5 flex-shrink-0 accent-green-600"
-                              checked={formData.business_opportunities.includes(o.id)}
-                              onChange={() => toggleArray("business_opportunities", o.id)}
-                            />
-                            <span className="leading-relaxed text-left">{o.label}</span>
-                          </label>
-                        ))}
+                      <div className="w-full">
+                        <div className="flex flex-col gap-3">
+                          {BUSINESS_OPPORTUNITIES.map((o) => (
+                            <label className="flex items-start gap-3 cursor-pointer text-sm md:text-base w-full" key={o.id}>
+                              <input
+                                type="checkbox"
+                                className="mt-0.5 h-5 w-5 flex-shrink-0 accent-green-600"
+                                checked={formData.business_opportunities.includes(o.id)}
+                                onChange={() => toggleArray("business_opportunities", o.id)}
+                              />
+                              <span className="leading-relaxed text-left flex-1">{o.label}</span>
+                            </label>
+                          ))}
+                        </div>
                       </div>
                     ) : (
                       <div className="help">Select "Entrepreneurship" or "Both" above to enable this section.</div>
@@ -223,18 +225,20 @@ export default function RegistrationForm() {
                     </div>
 
                     {showClient ? (
-                      <div className="flex flex-col space-y-3">
-                        {WEALTH_SOLUTIONS.map((o) => (
-                          <label className="flex items-start gap-3 cursor-pointer text-sm md:text-base" key={o.id}>
-                            <input
-                              type="checkbox"
-                              className="mt-0.5 h-5 w-5 flex-shrink-0 accent-green-600"
-                              checked={formData.wealth_solutions.includes(o.id)}
-                              onChange={() => toggleArray("wealth_solutions", o.id)}
-                            />
-                            <span className="leading-relaxed text-left">{o.label}</span>
-                          </label>
-                        ))}
+                      <div className="w-full">
+                        <div className="flex flex-col gap-3">
+                          {WEALTH_SOLUTIONS.map((o) => (
+                            <label className="flex items-start gap-3 cursor-pointer text-sm md:text-base w-full" key={o.id}>
+                              <input
+                                type="checkbox"
+                                className="mt-0.5 h-5 w-5 flex-shrink-0 accent-green-600"
+                                checked={formData.wealth_solutions.includes(o.id)}
+                                onChange={() => toggleArray("wealth_solutions", o.id)}
+                              />
+                              <span className="leading-relaxed text-left flex-1">{o.label}</span>
+                            </label>
+                          ))}
+                        </div>
                       </div>
                     ) : (
                       <div className="help">Select "Client" or "Both" above to enable this section.</div>
