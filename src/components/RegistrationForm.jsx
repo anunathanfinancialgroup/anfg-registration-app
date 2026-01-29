@@ -146,7 +146,7 @@ export default function RegistrationForm() {
                   We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
                 </p>
                 <p className="sub2 text-base md:text-lg text-slate-700 mb-6">
-                  At CAN Care & Advancement Network, you'll help families secure their tomorrow while advancing your own career with unlimited potential.
+                  At <b>CAN Care & Advancement Network</b>, you'll help families secure their tomorrow while advancing your own career with unlimited potential.
                 </p>
                 {/* Benefits Section */}
                 <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 mb-6 mx-auto max-w-4xl">
@@ -155,8 +155,6 @@ export default function RegistrationForm() {
                   </p>
                 </div>
               </div>
-
-
               <form className="cardBody" onSubmit={handleSubmit}>
                 {/* Interest */}
                 <div className="section">
