@@ -136,7 +136,7 @@ export default function RegistrationForm() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-            <div className="cardHeader text-center">
+           <div className="cardHeader text-center">
   {/* Logo - Responsive */}
   <img 
     src={logo} 
@@ -144,25 +144,38 @@ export default function RegistrationForm() {
     className="h-16 md:h-20 lg:h-24 w-auto mx-auto mb-2 object-contain max-w-full" 
     style={{ maxHeight: '96px' }}
   />
-<div className="h2 text-xl font-bold text-blue-700 mb-0 leading-none">CAN Care & Advancement Network</div>
-<div className="sub2 text-sm font-semibold text-yellow-600 mb-0 mt-1 leading-none">Caring today, advancing tomorrow</div>
-<p className="h1 text-base md:text-lg font-semibold text-slate-900 mb-4">Get Started - Registration</p>
-                 <p className="sub2 text-xl md:text-2xl font-semibold text-green-600 mb-4">
-                Welcome to <b>CAN Care & Advancement Network</b>
-                </p>
-                <p className="sub2 text-base md:text-lg text-slate-700 mb-4">
-                  We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
-                </p>
-                <p className="sub2 text-base md:text-lg text-slate-700 mb-6">
-                  At CAN Care & Advancement Network, you'll help families secure their tomorrow while advancing your own career with unlimited potential.
-                </p>
-                {/* Benefits Section */}
-                <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 mb-6 mx-auto max-w-4xl">
-                  <p className="sub2 text-sm md:text-base text-slate-800 text-center">
-                    ✅ <b>Be your own boss</b> ✅ <b>Flexible schedule</b> ✅ <b>Unlimited income potential</b> ✅ <b>Make an impact</b>
-                  </p>
-                </div>
-              </div>
+  
+  {/* Company Name - Blue, Bold */}
+  <h2 className="text-xl font-bold text-blue-700 mb-0 leading-tight">
+    CAN Care & Advancement Network
+  </h2>
+  
+  {/* Tagline - Gold, Bold */}
+  <p className="text-sm font-bold text-yellow-600 mb-0 mt-0.5 leading-tight">
+    Caring today, advancing tomorrow
+  </p>
+  
+  {/* Registration Heading - Smaller, Bold */}
+  <h1 className="text-base md:text-lg font-bold text-slate-900 mt-3 mb-3">
+    Get Started - Registration
+  </h1>
+  
+  <p className="text-sm md:text-base text-slate-700 mb-2 leading-snug">
+    Welcome to CAN Care & Advancement Network.
+    We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
+  </p>
+  
+  <p className="text-xs md:text-sm text-slate-600 mb-3 leading-snug">
+    At <strong>CAN Care & Advancement Network</strong>, you'll help families secure their tomorrow while advancing your own career with unlimited potential.
+  </p>
+  
+  {/* Benefits Section - Compact */}
+  <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-3 md:p-4 mb-4">
+    <p className="text-xs md:text-sm text-slate-800 text-center leading-relaxed">
+      ✅ <strong>Be your own boss</strong> ✅ <strong>Flexible schedule</strong> ✅ <strong>Unlimited income potential</strong> ✅ <strong>Make an impact</strong>
+    </p>
+  </div>
+</div>
               <form className="cardBody" onSubmit={handleSubmit}>
                 {/* Interest */}
                 <div className="section">
