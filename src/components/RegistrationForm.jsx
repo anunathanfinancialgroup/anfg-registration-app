@@ -136,7 +136,9 @@ export default function RegistrationForm() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-<div className="cardHeader text-center">
+
+
+              <div className="cardHeader text-center">
   {/* Logo - Responsive */}
   <img 
     src={logo} 
@@ -182,45 +184,48 @@ export default function RegistrationForm() {
     Get Started - Registration
   </h1>
   
-  {/* Welcome - Line 1 */}
+  {/* Welcome - Line 1 - MORE SPACING */}
   <p style={{
     fontSize: '16px',
     color: '#334155',
-    marginBottom: '12px',
+    marginTop: '0',
+    marginBottom: '16px',
     lineHeight: 1.6,
     textAlign: 'center'
   }}>
     Welcome to CAN Care & Advancement Network.
   </p>
   
-  {/* Welcome - Line 2 */}
+  {/* Welcome - Line 2 - MORE SPACING */}
   <p style={{
     fontSize: '14px',
     color: '#475569',
-    marginBottom: '12px',
+    marginTop: '0',
+    marginBottom: '16px',
     lineHeight: 1.6,
     textAlign: 'center'
   }}>
     We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
   </p>
   
-  {/* Welcome - Line 3 */}
+  {/* Welcome - Line 3 - MORE SPACING */}
   <p style={{
     fontSize: '14px',
     color: '#475569',
-    marginBottom: '16px',
+    marginTop: '0',
+    marginBottom: '20px',
     lineHeight: 1.6,
     textAlign: 'center'
   }}>
     At <strong>CAN Care & Advancement Network</strong>, you'll help families secure their tomorrow while advancing your own career with unlimited potential.
   </p>
   
-  {/* Benefits Section */}
+  {/* Benefits Section - GREEN TO BLUE GRADIENT */}
   <div style={{
-    background: 'linear-gradient(to right, #f0fdf4, #eff6ff)',
-    borderRadius: '8px',
-    padding: '16px',
-    marginBottom: '16px',
+    background: 'linear-gradient(90deg, #f0fdf4 0%, #dbeafe 100%)',
+    borderRadius: '12px',
+    padding: '20px 24px',
+    marginBottom: '24px',
     textAlign: 'center'
   }}>
     <p style={{
@@ -233,6 +238,7 @@ export default function RegistrationForm() {
     </p>
   </div>
 </div>
+              
   
               <form className="cardBody" onSubmit={handleSubmit}>
                 {/* Interest */}
