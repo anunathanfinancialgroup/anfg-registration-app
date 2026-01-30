@@ -145,7 +145,7 @@ export default function RegistrationForm() {
     style={{ maxHeight: '96px' }}
   />
   
-  {/* Company Name - Blue, Bold - INLINE STYLES */}
+  {/* Company Name - Blue, Bold */}
   <h2 style={{ 
     fontSize: '20px', 
     fontWeight: 'bold', 
@@ -157,7 +157,7 @@ export default function RegistrationForm() {
     CAN Care & Advancement Network
   </h2>
   
-  {/* Tagline - Gold, Bold - INLINE STYLES */}
+  {/* Tagline - Gold, Bold */}
   <p style={{ 
     fontSize: '14px', 
     fontWeight: 'bold', 
@@ -175,48 +175,59 @@ export default function RegistrationForm() {
     fontSize: '16px',
     fontWeight: 'bold',
     color: '#0f172a',
-    marginTop: '12px',
-    marginBottom: '12px',
+    marginTop: '16px',
+    marginBottom: '16px',
     textAlign: 'center'
   }}>
     Get Started - Registration
   </h1>
   
-  {/* Welcome Text - Compact, Centered */}
+  {/* Welcome - Line 1 */}
   <p style={{
-    fontSize: '14px',
+    fontSize: '16px',
     color: '#334155',
-    marginBottom: '8px',
-    lineHeight: 1.5,
+    marginBottom: '12px',
+    lineHeight: 1.6,
     textAlign: 'center'
   }}>
     Welcome to CAN Care & Advancement Network.
+  </p>
+  
+  {/* Welcome - Line 2 */}
+  <p style={{
+    fontSize: '14px',
+    color: '#475569',
+    marginBottom: '12px',
+    lineHeight: 1.6,
+    textAlign: 'center'
+  }}>
     We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
   </p>
   
+  {/* Welcome - Line 3 */}
   <p style={{
-    fontSize: '13px',
-    color: '#64748b',
-    marginBottom: '12px',
-    lineHeight: 1.5,
+    fontSize: '14px',
+    color: '#475569',
+    marginBottom: '16px',
+    lineHeight: 1.6,
     textAlign: 'center'
   }}>
     At <strong>CAN Care & Advancement Network</strong>, you'll help families secure their tomorrow while advancing your own career with unlimited potential.
   </p>
   
-  {/* Benefits Section - Compact, Centered */}
+  {/* Benefits Section */}
   <div style={{
     background: 'linear-gradient(to right, #f0fdf4, #eff6ff)',
     borderRadius: '8px',
-    padding: '12px 16px',
+    padding: '16px',
     marginBottom: '16px',
     textAlign: 'center'
   }}>
     <p style={{
-      fontSize: '13px',
+      fontSize: '14px',
       color: '#1e293b',
       margin: 0,
-      lineHeight: 1.6
+      lineHeight: 1.8
     }}>
       ✅ <strong>Be your own boss</strong> ✅ <strong>Flexible schedule</strong> ✅ <strong>Unlimited income potential</strong> ✅ <strong>Make an impact</strong>
     </p>
