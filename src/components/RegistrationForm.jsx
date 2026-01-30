@@ -137,17 +137,17 @@ export default function RegistrationForm() {
               transition={{ duration: 0.2 }}
             >
               <div className="cardHeader text-center">
+  <div className="cardHeader text-center">
   <img 
     src={logo} 
     alt="CAN Care & Advancement Network" 
     className="h-16 md:h-20 lg:h-24 w-auto mx-auto mb-3 object-contain max-w-full" 
     style={{ maxHeight: '96px' }}
   />
-  <div className="text-center mb-6">
-    <h2 className="text-xl text-blue-800 mb-0 leading-tight">CAN Care & Advancement Network</h2>
-    <p className="text-sm text-yellow-500 mb-3 mt-0">Caring today, advancing tomorrow</p>
-    <h1 className="text-lg md:text-xl font-bold text-slate-900 mt-2">Get Started - Registration</h1>
-  </div>
+  <h2 className="text-xl text-blue-700">CAN Care & Advancement Network</h2>
+  <p className="text-sm text-yellow-600">Caring today, advancing tomorrow</p>
+  <h1 className="text-lg md:text-xl font-bold text-slate-900 mt-3 mb-4">Get Started - Registration</h1>
+  
   <p className="sub1 text-xl md:text-2xl font-semibold text-green-600 mb-4">
     Welcome to CAN Care & Advancement Network.
   </p>
