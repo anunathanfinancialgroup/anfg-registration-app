@@ -106,13 +106,18 @@ export default function RegistrationForm() {
         referred_by: formData.referred_by.trim(),
       };
 
-      // Call Supabase Edge Function (server-side insert + email)
-      const { data, error: fnError } = await supabase.functions.invoke("register", {
-        body: payload,
-      });
+      // Check if supabase is initialized
+      if (!supabase) {
+        throw new Error("Database connection not available. Please check your environment variables.");
+      }
 
-      if (fnError) throw fnError;
-      if (!data?.ok) throw new Error(data?.error || "Submission failed.");
+      // Direct database insert - bypasses Edge Function requirement
+      const { data, error: insertError } = await supabase
+        .from("client_registrations")
+        .insert([payload])
+        .select();
+
+      if (insertError) throw insertError;
 
       setSubmitted(true);
     } catch (err) {
@@ -137,23 +142,14 @@ export default function RegistrationForm() {
               transition={{ duration: 0.2 }}
             >
               <div className="cardHeader text-center">
-  <div className="cardHeader text-center">
-  <img 
-    src={logo} 
-    alt="CAN Care & Advancement Network" 
-    className="h-16 md:h-20 lg:h-24 w-auto mx-auto mb-3 object-contain max-w-full" 
-    style={{ maxHeight: '96px' }}
-  />
-  <h2 className="text-xl text-blue-700">CAN Care & Advancement Network</h2>
-  <p className="text-sm text-yellow-600">Caring today, advancing tomorrow</p>
-  <h1 className="text-lg md:text-xl font-bold text-slate-900 mt-3 mb-4">Get Started - Registration</h1>
-  
-  <p className="sub1 text-xl md:text-2xl font-semibold text-green-600 mb-4">
-    Welcome to CAN Care & Advancement Network.
-  </p>
-  <p className="sub2 text-base md:text-lg text-slate-700 mb-4">
-    We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
-  </p>
+                <img src={logo} alt="CAN Care & Advancement Network" className="h-20 md:h-24 w-auto mx-auto mb-4 object-contain max-w-full" style={{ maxHeight: "96px" }} />
+                <div className="h1 text-2xl md:text-2xl font-bold text-slate-900 mb-4">Get Started - Registration</div>
+                <p className="sub1 text-xl md:text-2xl font-semibold text-green-600 mb-4">
+                  <b>Welcome to CAN Care & Advancement Network</b>
+                </p>
+                <p className="sub2 text-base md:text-lg text-slate-700 mb-4">
+                  We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
+                </p>
                 <p className="sub2 text-base md:text-lg text-slate-700 mb-6">
                   At <b>CAN Care & Advancement Network</b>, you'll help families secure their tomorrow while advancing your own career with unlimited potential.
                 </p>
@@ -164,6 +160,8 @@ export default function RegistrationForm() {
                   </p>
                 </div>
               </div>
+
+
               <form className="cardBody" onSubmit={handleSubmit}>
                 {/* Interest */}
                 <div className="section">
@@ -201,15 +199,16 @@ export default function RegistrationForm() {
                     </div>
 
                     {showEntrepreneurship ? (
-                      <div className="choices">
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
                         {BUSINESS_OPPORTUNITIES.map((o) => (
-                          <label className="pill" key={o.id}>
+                          <label key={o.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', cursor: 'pointer', width: '100%' }}>
                             <input
                               type="checkbox"
+                              style={{ marginTop: '2px', minWidth: '20px', minHeight: '20px', flexShrink: 0, accentColor: '#16a34a' }}
                               checked={formData.business_opportunities.includes(o.id)}
                               onChange={() => toggleArray("business_opportunities", o.id)}
                             />
-                            {o.label}
+                            <span style={{ flex: 1, textAlign: 'left', lineHeight: 1.6 }}>{o.label}</span>
                           </label>
                         ))}
                       </div>
@@ -224,15 +223,16 @@ export default function RegistrationForm() {
                     </div>
 
                     {showClient ? (
-                      <div className="choices">
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
                         {WEALTH_SOLUTIONS.map((o) => (
-                          <label className="pill" key={o.id}>
+                          <label key={o.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', cursor: 'pointer', width: '100%' }}>
                             <input
                               type="checkbox"
+                              style={{ marginTop: '2px', minWidth: '20px', minHeight: '20px', flexShrink: 0, accentColor: '#16a34a' }}
                               checked={formData.wealth_solutions.includes(o.id)}
                               onChange={() => toggleArray("wealth_solutions", o.id)}
                             />
-                            {o.label}
+                            <span style={{ flex: 1, textAlign: 'left', lineHeight: 1.6 }}>{o.label}</span>
                           </label>
                         ))}
                       </div>
@@ -413,7 +413,7 @@ export default function RegistrationForm() {
                 )}
               </p>
               <p className="sub2" style={{ marginTop: 10 }}>
-                We'll reach out to you soon. Thanks for choosing <b>CAN Care & Advancement Network</b>!
+                We'll reach out to you soon. Thanks for choosing CAN Care & Advancement Network!
               </p>
             </motion.div>
           )}
