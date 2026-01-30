@@ -137,8 +137,7 @@ export default function RegistrationForm() {
               transition={{ duration: 0.2 }}
             >
 
-
-              <div className="cardHeader text-center">
+<div className="cardHeader text-center">
   {/* Logo - Responsive */}
   <img 
     src={logo} 
@@ -152,7 +151,7 @@ export default function RegistrationForm() {
     fontSize: '20px', 
     fontWeight: 'bold', 
     color: '#1d4ed8', 
-    marginBottom: 0, 
+    marginBottom: '0px', 
     lineHeight: 1.2,
     textAlign: 'center'
   }}>
@@ -164,8 +163,8 @@ export default function RegistrationForm() {
     fontSize: '14px', 
     fontWeight: 'bold', 
     color: '#ca8a04', 
-    marginBottom: 0,
-    marginTop: '2px',
+    marginBottom: '0px',
+    marginTop: '4px',
     lineHeight: 1.2,
     textAlign: 'center'
   }}>
@@ -177,62 +176,70 @@ export default function RegistrationForm() {
     fontSize: '16px',
     fontWeight: 'bold',
     color: '#0f172a',
-    marginTop: '16px',
-    marginBottom: '16px',
+    marginTop: '20px',
+    marginBottom: '20px',
     textAlign: 'center'
   }}>
     Get Started - Registration
   </h1>
   
-  {/* Welcome - Line 1 - MORE SPACING */}
+  {/* Welcome - Line 1 - BIG SPACE BELOW */}
   <p style={{
     fontSize: '16px',
     color: '#334155',
-    marginTop: '0',
-    marginBottom: '16px',
+    margin: '0 0 20px 0',
+    padding: '0',
     lineHeight: 1.6,
-    textAlign: 'center'
+    textAlign: 'center',
+    display: 'block'
   }}>
     Welcome to CAN Care & Advancement Network.
   </p>
   
-  {/* Welcome - Line 2 - MORE SPACING */}
+  {/* Welcome - Line 2 - BIG SPACE BELOW */}
   <p style={{
     fontSize: '14px',
     color: '#475569',
-    marginTop: '0',
-    marginBottom: '16px',
+    margin: '0 0 20px 0',
+    padding: '0',
     lineHeight: 1.6,
-    textAlign: 'center'
+    textAlign: 'center',
+    display: 'block'
   }}>
     We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
   </p>
   
-  {/* Welcome - Line 3 - MORE SPACING */}
+  {/* Welcome - Line 3 - BIG SPACE BELOW */}
   <p style={{
     fontSize: '14px',
     color: '#475569',
-    marginTop: '0',
-    marginBottom: '20px',
+    margin: '0 0 24px 0',
+    padding: '0',
     lineHeight: 1.6,
-    textAlign: 'center'
+    textAlign: 'center',
+    display: 'block'
   }}>
     At <strong>CAN Care & Advancement Network</strong>, you'll help families secure their tomorrow while advancing your own career with unlimited potential.
   </p>
   
-  {/* Benefits Section - GREEN TO BLUE GRADIENT */}
+  {/* Benefits Section - BRIGHT GREEN TO BLUE GRADIENT */}
   <div style={{
-    background: 'linear-gradient(90deg, #f0fdf4 0%, #dbeafe 100%)',
+    backgroundImage: 'linear-gradient(to right, #dcfce7, #bfdbfe)',
+    border: '1px solid #86efac',
     borderRadius: '12px',
-    padding: '20px 24px',
+    padding: '24px',
     marginBottom: '24px',
-    textAlign: 'center'
+    textAlign: 'center',
+    width: '100%',
+    boxSizing: 'border-box'
   }}>
     <p style={{
       fontSize: '14px',
       color: '#1e293b',
-      margin: 0,
-      lineHeight: 1.8
+      fontWeight: '500',
+      margin: '0',
+      padding: '0',
+      lineHeight: 2
     }}>
       ✅ <strong>Be your own boss</strong> ✅ <strong>Flexible schedule</strong> ✅ <strong>Unlimited income potential</strong> ✅ <strong>Make an impact</strong>
     </p>
