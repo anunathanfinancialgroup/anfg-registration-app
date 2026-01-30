@@ -142,13 +142,13 @@ export default function RegistrationForm() {
   <img 
     src={logo} 
     alt="CAN Care & Advancement Network" 
-    className="h-16 md:h-20 lg:h-24 w-auto mx-auto mb-2 object-contain max-w-full" 
+    className="h-18 md:h-22 lg:h-26 w-auto mx-auto mb-2 object-contain max-w-full" 
     style={{ maxHeight: '96px' }}
   />
   
   {/* Company Name - Blue, Bold */}
   <h2 style={{ 
-    fontSize: '14px', 
+    fontSize: '16px', 
     fontWeight: 'bold', 
     color: '#1d4ed8', 
     marginBottom: '0px', 
@@ -160,7 +160,7 @@ export default function RegistrationForm() {
   
   {/* Tagline - Gold, Bold */}
   <p style={{ 
-    fontSize: '12px', 
+    fontSize: '13px', 
     fontWeight: 'bold', 
     color: '#ca8a04', 
     marginBottom: '0px',
@@ -173,7 +173,7 @@ export default function RegistrationForm() {
   
   {/* Registration Heading - Smaller, Bold */}
   <h1 style={{
-    fontSize: '25px',
+    fontSize: '22px',
     fontWeight: 'bold',
     color: '#0f172a',
     marginTop: '10px',
