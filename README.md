@@ -54,5 +54,5 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 ```
 ##  git add .
 git add .
-git commit -m "Fix spacing and benefits box gradient"
+git commit -m "Add visible spacing and bright gradient - force update"
 git push
