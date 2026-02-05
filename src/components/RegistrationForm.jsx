@@ -162,7 +162,7 @@ export default function RegistrationForm() {
   <p style={{ 
     fontSize: '14px', 
     fontWeight: 'normal', 
-    color: '#FF0', 
+    color: '#FFD700', 
     marginBottom: '0px',
     marginTop: '4px',
     lineHeight: 1.2,
