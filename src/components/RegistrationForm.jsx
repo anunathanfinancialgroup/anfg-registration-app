@@ -150,7 +150,7 @@ export default function RegistrationForm() {
   <h2 style={{ 
     fontSize: '18px', 
     fontWeight: 'bold', 
-    color: '#0000CD', 
+    color: '#1E5AA8', 
     marginBottom: '0px', 
     lineHeight: 1.2,
     textAlign: 'center'
