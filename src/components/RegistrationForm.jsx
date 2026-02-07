@@ -155,7 +155,7 @@ export default function RegistrationForm() {
     lineHeight: 1.2,
     textAlign: 'center'
   }}>
-    Advancement & Care Network
+    ACN Advancement & Care Network
   </h2>
   
   {/* Tagline - Gold, Bold */}
