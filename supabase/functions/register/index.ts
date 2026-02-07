@@ -123,7 +123,7 @@ Deno.serve(async (req) => {
   const MAILJET_API_KEY = Deno.env.get("MAILJET_API_KEY")!;
   const MAILJET_SECRET_KEY = Deno.env.get("MAILJET_SECRET_KEY")!;
   const FROM_EMAIL = Deno.env.get("FROM_EMAIL")!;
-  const FROM_NAME = Deno.env.get("FROM_NAME") ?? "CAN Care & Advancement Network";
+  const FROM_NAME = Deno.env.get("FROM_NAME") ?? "ACN Advancement & Care Network";
   const ADMIN_NOTIFY_EMAIL = Deno.env.get("ADMIN_NOTIFY_EMAIL") ?? "";
   const LOGO_URL = Deno.env.get("LOGO_URL") ?? "";
   const BCC_EMAIL = Deno.env.get("BCC_EMAIL") ?? "canfinancialsolutions@gmail.com";
@@ -162,13 +162,13 @@ const interestTypeFormatted =
   <body style="font-family:Arial,Helvetica,sans-serif; color:#0f172a; line-height:1.2;">
     <div style="max-width:640px;margin:0 auto;padding:22px;">
       <div style="text-align:center;margin-bottom:18px;">
-        ${ ? `<img src="${}" alt="CAN Care & Advancement Network" style="max-width:160px;height:auto;margin-bottom:10px;" />` : ""}
+        ${ ? `<img src="${}" alt="ACN Advancement & Care Network" style="max-width:160px;height:auto;margin-bottom:10px;" />` : ""}
         <h2 style="margin:0;">Registration Confirmation</h2>
         <div style="color:#475569;font-size:13px;margin-top:6px;">We're excited to connect with you and introduce an opportunity that combines purpose with prosperity!</div>
       </div>
 
       <p>Dear <b>${escapeHtml(payloadToInsert.first_name)} ${escapeHtml(payloadToInsert.last_name)}</b>,</p>
-      <p>Thank you for registering with <b>${FROM_NAME}</b>.Thank you for registering with CAN Care & Advancement Network. We received your information and will contact you shortly.</p>
+      <p>Thank you for registering with <b>${FROM_NAME}</b>.Thank you for registering with ACN Advancement & Care Network. We received your information and will contact you shortly.</p>
 
       <div style="background:#f8fafc;border-left:4px solid #14b8a6;padding:12px 14px;border-radius:10px;">
         <div style="font-weight:bold;margin-bottom:6px;">Summary</div>
@@ -223,7 +223,7 @@ const interestTypeFormatted =
           {
             From: { Email: FROM_EMAIL, Name: FROM_NAME },
             To: [{ Email: toEmail, Name: toName }],
-            ...(BCC_EMAIL ? { Bcc: [{ Email: BCC_EMAIL, Name: "CAN Care & Advancement Network" }] } : {}),
+            ...(BCC_EMAIL ? { Bcc: [{ Email: BCC_EMAIL, Name: "ACN Advancement & Care Network" }] } : {}),
             Subject: subject,
             HTMLPart: html,
           },
@@ -237,7 +237,7 @@ const interestTypeFormatted =
   const clientRes = await sendMail(
     payloadToInsert.email,
     `${escapeHtml(payloadToInsert.first_name)} ${escapeHtml(payloadToInsert.last_name)}`,
-    "Registration Confirmation - CAN Care & Advancement Network",
+    "Registration Confirmation - ACN Advancement & Care Network",
     htmlBody
   );
 
@@ -252,7 +252,7 @@ const interestTypeFormatted =
   // Optional admin notification
   if (ADMIN_NOTIFY_EMAIL) {
     const adminHtml = htmlBody.replace("Registration Confirmation", "New Client Registration");
-    await sendMail(ADMIN_NOTIFY_EMAIL, "Admin", "New Client Registration - CAN Care & Advancement Network", adminHtml);
+    await sendMail(ADMIN_NOTIFY_EMAIL, "Admin", "New Client Registration - ACN Advancement & Care Network", adminHtml);
   }
 
   return new Response(JSON.stringify({ ok: true }), {
