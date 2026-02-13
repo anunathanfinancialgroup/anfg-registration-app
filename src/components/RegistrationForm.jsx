@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient.js";
-import logo from "../assets/acn-logo.png";
+import logo from "../assets/anunathan-logo.png";
 
 const BUSINESS_OPPORTUNITIES = [
   { id: "financial_freedom", label: "Financial and Time Freedom" },
@@ -141,7 +141,7 @@ export default function RegistrationForm() {
   {/* Logo - Responsive */}
   <img 
     src={logo} 
-    alt="Advancement & Care Network" 
+    alt="AnuNathan Financial Group" 
     className="h-20 md:h-24 lg:h-28 w-auto mx-auto mb-2 object-contain max-w-full" 
     style={{ maxHeight: '96px' }}
   />
@@ -155,7 +155,7 @@ export default function RegistrationForm() {
     lineHeight: 1.2,
     textAlign: 'center'
   }}>
-    ACN Advancement & Care Network
+    AnuNathan Financial Group
   </h2>
   
   {/* Tagline - Gold, Bold */}
@@ -168,7 +168,7 @@ export default function RegistrationForm() {
     lineHeight: 1.2,
     textAlign: 'center'
   }}>
-    Advancing Careers, Caring for Families
+    Build your career. Protect their future
   </p>
   
   {/* Registration Heading - Smaller, Bold */}
@@ -187,7 +187,7 @@ export default function RegistrationForm() {
                   We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
                 </p>
                 <p className="sub2 text-base md:text-lg text-slate-700 mb-6">
-                  At <b>Advancement & Care Network</b>, you'll help families secure their tomorrow and advance your career with unlimited potential.
+                  At <b>AnuNathan Financial Group</b>, you'll help families secure their tomorrow and advance your career with unlimited potential.
                 </p>
                 {/* Benefits Section */}
                 <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 mb-6 mx-auto max-w-4xl">
@@ -450,7 +450,7 @@ export default function RegistrationForm() {
                 )}
               </p>
               <p className="sub2" style={{ marginTop: 10 }}>
-               We'll reach out to you soon. Thanks for choosing <b>ACN Advancement & Care Network</b>!
+               We'll reach out to you soon. Thanks for choosing <b>AnuNathan Financial Group</b>!
               </p>
             </motion.div>
           )}
