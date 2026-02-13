@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient.js";
-import logo from "../assets/anunathan-logo.png";
+import logo from "../assets/acn-logo.png";
 
 const BUSINESS_OPPORTUNITIES = [
   { id: "financial_freedom", label: "Financial and Time Freedom" },
