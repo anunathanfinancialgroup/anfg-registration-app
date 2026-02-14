@@ -136,40 +136,7 @@ export default function RegistrationForm() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-{/*
-<div className="cardHeader text-center">
- <img 
-    src={logo} 
-    alt="AnuNathan Financial Group" 
-    className="h-20 md:h-24 lg:h-28 w-auto mx-auto mb-2 object-contain max-w-full" 
-    style={{ maxHeight: '96px' }}
-  />
-*/}
-  {/* Company Name - Blue, Bold */}
-{/*  <h2 style={{ 
-    fontSize: '18px', 
-    fontWeight: 'bold', 
-    color: '#1E5AA8', 
-    marginBottom: '0px', 
-    lineHeight: 1.2,
-    textAlign: 'center'
-  }}>
-    AnuNathan Financial Group
-  </h2>
-  */}
-  {/* Tagline - Gold, Bold */}
- {/* <p style={{ 
-    fontSize: '14px', 
-    fontWeight: 'bold', 
-    color: '#808000', 
-    marginBottom: '0px',
-    marginTop: '4px',
-    lineHeight: 1.2,
-    textAlign: 'center'
-  }}>
-    Building careers, protecting families
-  </p>
-*/}
+
   {/* Registration Heading - Smaller, Bold */}
   <h1 style={{
     fontSize: '23px',
