@@ -138,12 +138,20 @@ export default function RegistrationForm() {
             >
 <div className="cardHeader text-center">
   {/* Logo - Responsive */}
+ <div className="flex flex-col items-center gap-2 mb-4">
   <img 
     src={logo} 
     alt="AnuNathan FS" 
-    className="h-20 md:h-24 lg:h-28 w-auto mx-auto mb-2 object-contain max-w-full" 
-    style={{ maxHeight: '96px' }}
+    className="h-24 md:h-32 lg:h-40 w-auto mx-auto object-contain max-w-full drop-shadow-lg" 
+    style={{ 
+      maxHeight: '160px',
+      filter: 'brightness(1.1) contrast(1.1)'
+    }}
   />
+  <p className="text-lg md:text-xl lg:text-2xl font-semibold text-gray-800 text-center px-4">
+    Your Tagline Here
+  </p>
+</div>
 
   {/* Registration Heading - Smaller, Bold */}
   <h1 style={{
