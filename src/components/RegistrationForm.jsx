@@ -140,11 +140,12 @@ export default function RegistrationForm() {
 <div className="cardHeader text-center">
   {/* Logo - Responsive */}
   <img 
-    src={logo} 
-    alt="Advancement & Care Network" 
-    className="h-20 md:h-24 lg:h-28 w-auto mx-auto mb-2 object-contain max-w-full" 
-    style={{ maxHeight: '96px' }}
-  />
+  src="/anunathan-logo.png" 
+  className="h-16 w-auto" 
+  alt="AanuNathan Financial Group Logo" 
+  style={{ backgroundColor: 'transparent', mixBlendMode: 'normal' }}
+  onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")} 
+/>
   
   {/* Company Name - Blue, Bold */}
   <h2 style={{ 
