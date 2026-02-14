@@ -139,7 +139,7 @@ export default function RegistrationForm() {
 <div className="cardHeader text-center">
   {/* Logo - Responsive */}
 <div className="flex flex-col items-center gap-1 mb-4">
-   <img src="/anunathan-logo.png" 
+   <img src={logo} 
                 alt="AnuNathan Financial Group" 
                 className="h-16 md:h-20 lg:h-24 w-auto mx-auto mb-3 object-contain max-w-full" 
                 style={{ maxHeight: '96px' }}
