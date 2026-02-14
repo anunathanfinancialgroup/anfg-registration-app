@@ -136,6 +136,14 @@ export default function RegistrationForm() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
+<div className="cardHeader text-center">
+  {/* Logo - Responsive */}
+  <img 
+    src={logo} 
+    alt="AnuNathan FS" 
+    className="h-20 md:h-24 lg:h-28 w-auto mx-auto mb-2 object-contain max-w-full" 
+    style={{ maxHeight: '96px' }}
+  />
 
   {/* Registration Heading - Smaller, Bold */}
   <h1 style={{
@@ -148,7 +156,6 @@ export default function RegistrationForm() {
   }}>
     Get Started - Registration
   </h1>
-  
  <p className="sub2 text-base md:text-lg text-slate-700 mb-4">
                   We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
                 </p>
@@ -165,9 +172,7 @@ export default function RegistrationForm() {
                   </p>
                 </div>
 </div>
-              
-  
-              <form className="cardBody" onSubmit={handleSubmit}>
+        <form className="cardBody" onSubmit={handleSubmit}>
                 {/* Interest */}
                 <div className="section">
                   <div className="sectionTitle">
