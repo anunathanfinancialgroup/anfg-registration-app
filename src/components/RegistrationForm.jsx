@@ -140,7 +140,7 @@ export default function RegistrationForm() {
   {/* Logo - Responsive */}
 <div className="flex flex-col items-center gap-1 mb-4">
    <img src={logo} 
-                alt="AnuNathan Financial Group" 
+                alt="AnNa Financial Group" 
                 className="h-16 md:h-20 lg:h-24 w-auto mx-auto mb-3 object-contain max-w-full" 
                 style={{ maxHeight: '96px' }}
               />
@@ -160,7 +160,7 @@ export default function RegistrationForm() {
                   We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
                 </p>
                 <p className="sub2 text-base md:text-lg text-slate-700 mb-6">
-                  At <b>AnuNathan Financial Group</b>, you'll help families secure their tomorrow and advance your career with unlimited potential.
+                  At <b>AnNa Financial Group</b>, you'll help families secure their tomorrow and advance your career with unlimited potential.
                 </p>
                 {/* Benefits Section */}
                 <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 mb-6 mx-auto max-w-4xl">
@@ -421,7 +421,7 @@ export default function RegistrationForm() {
                 )}
               </p>
               <p className="sub2" style={{ marginTop: 10 }}>
-               We'll reach out to you soon. Thanks for choosing <b>AnuNathan Financial Group</b>!
+               We'll reach out to you soon. Thanks for choosing <b>AnNa Financial Group</b>!
               </p>
             </motion.div>
           )}
