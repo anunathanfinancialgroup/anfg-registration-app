@@ -5,7 +5,7 @@ export default function App() {
     <div className="page">
       <RegistrationForm />
       <footer className="footer">
-        <span>©{new Date().getFullYear()} AnuNathan Financial Group</span>
+        <span>©{new Date().getFullYear()} AnNa Financial Group</span>
       </footer>
     </div>
   );
