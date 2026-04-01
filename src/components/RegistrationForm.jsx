@@ -142,30 +142,40 @@ export default function RegistrationForm() {
               transition={{ duration: 0.2 }}
             >
 <div className="cardHeader text-center">
-  {/* ── CHANGE START ──────────────────────────────────────────────────────────
-      Wrapped the logo in a relative container and added the agent photo
-      absolutely positioned to the top-right corner.
-      All existing logo classes and styles are preserved.
-  ────────────────────────────────────────────────────────────────────────── */}
-  <div className="relative flex flex-col items-center gap-1 mb-4">
-    {/* Existing logo – unchanged */}
-    <img
-      src={logo}
-      alt="AnNa Financial Group"
-      className="h-16 md:h-20 lg:h-24 w-auto mx-auto mb-3 object-contain max-w-full"
-      style={{ maxHeight: '96px' }}
-    />
 
-    {/* Agent photo – top-right of the header row */}
-    <img
-      src={agentPhoto}
-      alt="Your Agent"
-      className="absolute top-0 right-0 w-14 h-14 md:w-16 md:h-16 rounded-lg object-cover object-top shadow-sm border-2 border-white"
-    />
+  {/* ── CHANGE START ──────────────────────────────────────────────────────
+      3-column flex row: spacer | logo (centered) | agent photo (right).
+      Matches the screenshot layout exactly.
+  ────────────────────────────────────────────────────────────────────── */}
+  <div className="flex items-center justify-between mb-4" style={{ minHeight: '100px' }}>
+
+    {/* Left spacer – mirrors the photo width so logo stays perfectly centred */}
+    <div className="flex-1" />
+
+    {/* Logo – centred */}
+    <div className="flex-1 flex justify-center">
+      <img
+        src={logo}
+        alt="AnNa Financial Group"
+        className="h-16 md:h-20 lg:h-24 w-auto object-contain"
+        style={{ maxHeight: '96px' }}
+      />
+    </div>
+
+    {/* Agent photo – right column */}
+    <div className="flex-1 flex justify-end">
+      <img
+        src={agentPhoto}
+        alt="Financial Agent"
+        className="w-24 h-24 md:w-28 md:h-28 rounded-xl object-cover object-top shadow-md border-2 border-slate-200"
+        style={{ objectPosition: 'top center' }}
+      />
+    </div>
+
   </div>
-  {/* ── CHANGE END ─────────────────────────────────────────────────────────── */}
+  {/* ── CHANGE END ─────────────────────────────────────────────────────── */}
 
-  {/* Registration Heading - Smaller, Bold */}
+  {/* Registration Heading */}
   <h1 style={{
     fontSize: '23px',
     fontWeight: 'bold',
@@ -176,21 +186,22 @@ export default function RegistrationForm() {
   }}>
     Get Started - Registration
   </h1>
- <p className="sub2 text-base md:text-lg text-slate-700 mb-4">
-                  We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
-                </p>
-                <p className="sub2 text-base md:text-lg text-slate-700 mb-6">
-                  At <b>AnNa Financial Group</b>, you'll help families secure their tomorrow and advance your career with unlimited potential.
-                </p>
-                {/* Benefits Section */}
-                <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 mb-6 mx-auto max-w-4xl">
-                  <p className="sub2 text-sm md:text-base text-slate-800 text-center">
-                    ✅ <b>Be your own boss</b> ✅ <b>Flexible schedule</b>
-                  </p>
-                   <p className="sub2 text-sm md:text-base text-slate-800 text-center">
-                   ✅ <b>Unlimited income potential</b> ✅ <b>Make an impact</b>
-                  </p>
-                </div>
+  <p className="sub2 text-base md:text-lg text-slate-700 mb-4">
+    We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
+  </p>
+  <p className="sub2 text-base md:text-lg text-slate-700 mb-6">
+    At <b>AnNa Financial Group</b>, you'll help families secure their tomorrow and advance your career with unlimited potential.
+  </p>
+  {/* Benefits Section */}
+  <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 mb-6 mx-auto max-w-4xl">
+    <p className="sub2 text-sm md:text-base text-slate-800 text-center">
+      ✅ <b>Be your own boss</b> ✅ <b>Flexible schedule</b>
+    </p>
+    <p className="sub2 text-sm md:text-base text-slate-800 text-center">
+      ✅ <b>Unlimited income potential</b> ✅ <b>Make an impact</b>
+    </p>
+  </div>
+
 </div>
         <form className="cardBody" onSubmit={handleSubmit}>
                 {/* Interest */}
