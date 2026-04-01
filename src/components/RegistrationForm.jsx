@@ -160,7 +160,7 @@ export default function RegistrationForm() {
       gridTemplateColumns: '1fr auto 1fr',
       alignItems: 'center',
       marginTop: '32px',
-      marginBottom: '24px',
+      marginBottom: '0px',
       minHeight: '140px',
     }}
   >
@@ -186,8 +186,8 @@ export default function RegistrationForm() {
         src={agentPhoto}
         alt="Financial Agent"
         style={{
-          width: 'clamp(55px, 7vw, 75px)',
-          height: 'clamp(55px, 7vw, 75px)',
+          height: 'clamp(100px, 13vw, 150px)',
+          width: 'auto',
           objectFit: 'contain',
           objectPosition: 'top center',
           background: 'transparent',
