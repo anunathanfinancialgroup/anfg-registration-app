@@ -143,45 +143,44 @@ export default function RegistrationForm() {
             >
 <div className="cardHeader text-center">
 
-  {/* ── CHANGE START ──────────────────────────────────────────────────────
-      Row 1 : Logo – larger, centered
-      Row 2 : "Get Started - Registration" heading + agent photo aligned
-              to the right end of the word "Registration"
-  ────────────────────────────────────────────────────────────────────── */}
-
   {/* ── CHANGE START ─────────────────────────────────────────────────────
-      Single row: 4 equal columns
-        Col 1 (25%) – empty left balance
-        Col 2 (25%) – logo, centered in the middle of the page
-        Col 3 (25%) – agent photo, centered between logo-end and page-end
-        Col 4 (25%) – empty right edge
-      This places the logo at the 50% mark and the agent photo at the 75%
-      mark — i.e. midway between the logo and the right edge.
+      Layout math:
+        gridTemplateColumns: '1fr  auto  1fr'
+                               ↑    ↑    ↑
+                            left  LOGO  right-half
+
+      • Logo (auto) is mathematically centred — left 1fr == right 1fr.
+      • Agent photo lives inside the right 1fr column, centred within it.
+        That puts it at exactly 75% of the row —
+        i.e. midway between the logo's right edge and the row's right end.
   ────────────────────────────────────────────────────────────────────── */}
   <div
     style={{
       display: 'grid',
-      gridTemplateColumns: '1fr 1fr 1fr 1fr',
+      gridTemplateColumns: '1fr auto 1fr',
       alignItems: 'center',
       marginTop: '28px',
       marginBottom: '20px',
       minHeight: '110px',
     }}
   >
-    {/* Col 1 – left balance spacer */}
+    {/* Col 1 – left spacer (mirrors right col so logo stays dead-centre) */}
     <div />
 
-    {/* Col 2 – Logo in the center of the page */}
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <img
-        src={logo}
-        alt="AnNa Financial Group"
-        style={{ height: '110px', width: 'auto', objectFit: 'contain', display: 'block' }}
-      />
-    </div>
+    {/* Col 2 – Logo, auto width, perfectly centred on the row */}
+    <img
+      src={logo}
+      alt="AnNa Financial Group"
+      style={{
+        height: '110px',
+        width: 'auto',
+        objectFit: 'contain',
+        display: 'block',
+      }}
+    />
 
-    {/* Col 3 – Agent photo: midway between logo-right and page-right */}
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
+    {/* Col 3 – right half; agent centred inside it → sits at 75% of row */}
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <img
         src={agentPhoto}
         alt="Financial Agent"
@@ -191,23 +190,24 @@ export default function RegistrationForm() {
           objectFit: 'contain',
           objectPosition: 'top center',
           background: 'transparent',
-          flexShrink: 0,
           display: 'block',
         }}
       />
     </div>
-
-    {/* Col 4 – right edge spacer */}
-    <div />
   </div>
   {/* ── CHANGE END ─────────────────────────────────────────────────────── */}
 
-  {/* Heading below the logo+photo row */}
+  {/* Heading below the logo + photo row */}
   <h1 style={{
     fontSize: '23px',
     fontWeight: 'bold',
     color: '#0f172a',
     margin: '0 0 10px 0',
+    lineHeight: 1.2,
+    textAlign: 'center',
+  }}>
+    Get Started - Registration
+  </h1>
     lineHeight: 1.2,
     textAlign: 'center',
   }}>
