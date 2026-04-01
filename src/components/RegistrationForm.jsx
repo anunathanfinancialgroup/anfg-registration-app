@@ -144,59 +144,59 @@ export default function RegistrationForm() {
 <div className="cardHeader text-center">
 
   {/* ── CHANGE START ──────────────────────────────────────────────────────
-      3-column grid: [spacer] [logo center] [agent photo right]
-      Grid keeps logo perfectly centered regardless of photo width.
+      Row 1 : Logo – larger, centered
+      Row 2 : "Get Started - Registration" heading + agent photo aligned
+              to the right end of the word "Registration"
   ────────────────────────────────────────────────────────────────────── */}
-  <div
-    style={{
-      display: 'grid',
-      gridTemplateColumns: '1fr auto 1fr',
-      alignItems: 'center',
-      marginBottom: '20px',
-      minHeight: '88px',
-    }}
-  >
-    {/* Col 1 – left spacer (empty, balances col 3) */}
-    <div />
 
-    {/* Col 2 – Logo perfectly centered */}
+  {/* Row 1 – Logo only, centered, larger */}
+  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '18px' }}>
     <img
       src={logo}
       alt="AnNa Financial Group"
-      style={{ height: '72px', width: 'auto', objectFit: 'contain', display: 'block' }}
+      style={{ height: '110px', width: 'auto', objectFit: 'contain', display: 'block' }}
     />
+  </div>
 
-    {/* Col 3 – Agent photo flush right */}
-    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-      <img
-        src={agentPhoto}
-        alt="Financial Agent"
-        style={{
-          width: '88px',
-          height: '88px',
-          borderRadius: '12px',
-          objectFit: 'cover',
-          objectPosition: 'top center',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
-          border: '2px solid #e2e8f0',
-          display: 'block',
-        }}
-      />
-    </div>
+  {/* Row 2 – Heading + agent photo sitting at the right end of the heading */}
+  <div
+    style={{
+      display: 'flex',
+      alignItems: 'flex-end',   /* photo bottom aligns with text baseline */
+      justifyContent: 'center',
+      gap: '14px',
+      marginBottom: '10px',
+      flexWrap: 'wrap',
+    }}
+  >
+    <h1 style={{
+      fontSize: '23px',
+      fontWeight: 'bold',
+      color: '#0f172a',
+      margin: 0,
+      lineHeight: 1.2,
+      textAlign: 'center',
+    }}>
+      Get Started - Registration
+    </h1>
+
+    {/* Agent photo – sits right at the end of "Registration" */}
+    <img
+      src={agentPhoto}
+      alt="Financial Agent"
+      style={{
+        width: '80px',
+        height: '80px',
+        borderRadius: '12px',
+        objectFit: 'cover',
+        objectPosition: 'top center',
+        boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
+        border: '2.5px solid #cbd5e1',
+        flexShrink: 0,
+      }}
+    />
   </div>
   {/* ── CHANGE END ─────────────────────────────────────────────────────── */}
-
-  {/* Registration Heading */}
-  <h1 style={{
-    fontSize: '23px',
-    fontWeight: 'bold',
-    color: '#0f172a',
-    marginTop: '10px',
-    marginBottom: '10px',
-    textAlign: 'center'
-  }}>
-    Get Started - Registration
-  </h1>
   <p className="sub2 text-base md:text-lg text-slate-700 mb-4">
     We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
   </p>
