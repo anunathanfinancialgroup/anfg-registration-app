@@ -149,8 +149,8 @@ export default function RegistrationForm() {
               to the right end of the word "Registration"
   ────────────────────────────────────────────────────────────────────── */}
 
-  {/* Row 1 – Logo only, centered, larger */}
-  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '18px' }}>
+  {/* Row 1 – Logo only, centered, moved down with marginTop */}
+  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '32px', marginBottom: '20px' }}>
     <img
       src={logo}
       alt="AnNa Financial Group"
@@ -158,13 +158,13 @@ export default function RegistrationForm() {
     />
   </div>
 
-  {/* Row 2 – Heading + agent photo sitting at the right end of the heading */}
+  {/* Row 2 – Heading + agent photo at right end of "Registration" */}
   <div
     style={{
       display: 'flex',
-      alignItems: 'flex-end',   /* photo bottom aligns with text baseline */
+      alignItems: 'flex-end',
       justifyContent: 'center',
-      gap: '14px',
+      gap: '10px',
       marginBottom: '10px',
       flexWrap: 'wrap',
     }}
@@ -180,19 +180,18 @@ export default function RegistrationForm() {
       Get Started - Registration
     </h1>
 
-    {/* Agent photo – sits right at the end of "Registration" */}
+    {/* Agent photo – transparent background, no border/shadow/radius */}
     <img
       src={agentPhoto}
       alt="Financial Agent"
       style={{
         width: '80px',
         height: '80px',
-        borderRadius: '12px',
-        objectFit: 'cover',
+        objectFit: 'contain',        /* contain keeps transparent edges visible */
         objectPosition: 'top center',
-        boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
-        border: '2.5px solid #cbd5e1',
+        background: 'transparent',   /* no background fill */
         flexShrink: 0,
+        display: 'block',
       }}
     />
   </div>
