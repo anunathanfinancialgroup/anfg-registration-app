@@ -3,6 +3,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient.js";
 import logo from "../assets/anunathan-logo.png";
+// ── CHANGE START ─────────────────────────────────────────────────────────────
+// Added import for the agent photo.
+// Place me.png inside src/assets/ in the repository (same folder as the logo).
+import agentPhoto from "../assets/me.png";
+// ── CHANGE END ───────────────────────────────────────────────────────────────
 
 const BUSINESS_OPPORTUNITIES = [
   { id: "financial_freedom", label: "Financial and Time Freedom" },
@@ -137,14 +142,29 @@ export default function RegistrationForm() {
               transition={{ duration: 0.2 }}
             >
 <div className="cardHeader text-center">
-  {/* Logo - Responsive */}
-<div className="flex flex-col items-center gap-1 mb-4">
-   <img src={logo} 
-                alt="AnNa Financial Group" 
-                className="h-16 md:h-20 lg:h-24 w-auto mx-auto mb-3 object-contain max-w-full" 
-                style={{ maxHeight: '96px' }}
-              />
-</div>
+  {/* ── CHANGE START ──────────────────────────────────────────────────────────
+      Wrapped the logo in a relative container and added the agent photo
+      absolutely positioned to the top-right corner.
+      All existing logo classes and styles are preserved.
+  ────────────────────────────────────────────────────────────────────────── */}
+  <div className="relative flex flex-col items-center gap-1 mb-4">
+    {/* Existing logo – unchanged */}
+    <img
+      src={logo}
+      alt="AnNa Financial Group"
+      className="h-16 md:h-20 lg:h-24 w-auto mx-auto mb-3 object-contain max-w-full"
+      style={{ maxHeight: '96px' }}
+    />
+
+    {/* Agent photo – top-right of the header row */}
+    <img
+      src={agentPhoto}
+      alt="Your Agent"
+      className="absolute top-0 right-0 w-20 h-20 md:w-24 md:h-24 rounded-xl object-cover object-top shadow-md border-2 border-white"
+    />
+  </div>
+  {/* ── CHANGE END ─────────────────────────────────────────────────────────── */}
+
   {/* Registration Heading - Smaller, Bold */}
   <h1 style={{
     fontSize: '23px',
@@ -198,16 +218,14 @@ export default function RegistrationForm() {
                     ))}
                   </div>
 
-                  <div className="help">Choose one. Selecting “Both” shows both sections.</div>
+                  <div className="help">Choose one. Selecting "Both" shows both sections.</div>
                 </div>
 
-                {/* Opportunities + Wealth */}
-                <div className="split">
+                {/* Entrepreneurship & Client – side by side */}
+                <div className="grid2">
+                  {/* Entrepreneurship */}
                   <div className="section">
-                    <div className="sectionTitle">
-                      Entrepreneurship - Business Opportunity{showEntrepreneurship ? <span className="req">*</span> : null}
-                    </div>
-
+                    <div className="sectionTitle">Entrepreneurship – Business Opportunity</div>
                     {showEntrepreneurship ? (
                       <div className="choices">
                         {BUSINESS_OPPORTUNITIES.map((o) => (
@@ -222,15 +240,13 @@ export default function RegistrationForm() {
                         ))}
                       </div>
                     ) : (
-                      <div className="help">Select “Entrepreneurship” or “Both” above to enable this section.</div>
+                      <div className="help">Select "Entrepreneurship" or "Both" above to enable this section.</div>
                     )}
                   </div>
 
+                  {/* Client */}
                   <div className="section">
-                    <div className="sectionTitle">
-                      Client - Wealth Building Solutions{showClient ? <span className="req">*</span> : null}
-                    </div>
-
+                    <div className="sectionTitle">Client – Wealth Building Solutions</div>
                     {showClient ? (
                       <div className="choices">
                         {WEALTH_SOLUTIONS.map((o) => (
@@ -245,7 +261,7 @@ export default function RegistrationForm() {
                         ))}
                       </div>
                     ) : (
-                      <div className="help">Select “Client” or “Both” above to enable this section.</div>
+                      <div className="help">Select "Client" or "Both" above to enable this section.</div>
                     )}
                   </div>
                 </div>
