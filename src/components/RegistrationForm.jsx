@@ -144,34 +144,45 @@ export default function RegistrationForm() {
 <div className="cardHeader text-center">
 
   {/* ── CHANGE START ──────────────────────────────────────────────────────
-      3-column flex row: spacer | logo (centered) | agent photo (right).
-      Matches the screenshot layout exactly.
+      3-column grid: [spacer] [logo center] [agent photo right]
+      Grid keeps logo perfectly centered regardless of photo width.
   ────────────────────────────────────────────────────────────────────── */}
-  <div className="flex items-center justify-between mb-4" style={{ minHeight: '100px' }}>
+  <div
+    style={{
+      display: 'grid',
+      gridTemplateColumns: '1fr auto 1fr',
+      alignItems: 'center',
+      marginBottom: '20px',
+      minHeight: '88px',
+    }}
+  >
+    {/* Col 1 – left spacer (empty, balances col 3) */}
+    <div />
 
-    {/* Left spacer – mirrors the photo width so logo stays perfectly centred */}
-    <div className="flex-1" />
+    {/* Col 2 – Logo perfectly centered */}
+    <img
+      src={logo}
+      alt="AnNa Financial Group"
+      style={{ height: '72px', width: 'auto', objectFit: 'contain', display: 'block' }}
+    />
 
-    {/* Logo – centred */}
-    <div className="flex-1 flex justify-center">
-      <img
-        src={logo}
-        alt="AnNa Financial Group"
-        className="h-16 md:h-20 lg:h-24 w-auto object-contain"
-        style={{ maxHeight: '96px' }}
-      />
-    </div>
-
-    {/* Agent photo – right column */}
-    <div className="flex-1 flex justify-end">
+    {/* Col 3 – Agent photo flush right */}
+    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
       <img
         src={agentPhoto}
         alt="Financial Agent"
-        className="w-24 h-24 md:w-28 md:h-28 rounded-xl object-cover object-top shadow-md border-2 border-slate-200"
-        style={{ objectPosition: 'top center' }}
+        style={{
+          width: '88px',
+          height: '88px',
+          borderRadius: '12px',
+          objectFit: 'cover',
+          objectPosition: 'top center',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
+          border: '2px solid #e2e8f0',
+          display: 'block',
+        }}
       />
     </div>
-
   </div>
   {/* ── CHANGE END ─────────────────────────────────────────────────────── */}
 
