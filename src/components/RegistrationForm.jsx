@@ -149,52 +149,70 @@ export default function RegistrationForm() {
               to the right end of the word "Registration"
   ────────────────────────────────────────────────────────────────────── */}
 
-  {/* Row 1 – Logo only, centered, moved down with marginTop */}
-  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '32px', marginBottom: '20px' }}>
-    <img
-      src={logo}
-      alt="AnNa Financial Group"
-      style={{ height: '110px', width: 'auto', objectFit: 'contain', display: 'block' }}
-    />
-  </div>
-
-  {/* Row 2 – Heading + agent photo at right end of "Registration" */}
+  {/* ── CHANGE START ─────────────────────────────────────────────────────
+      Single row: 4 equal columns
+        Col 1 (25%) – empty left balance
+        Col 2 (25%) – logo, centered in the middle of the page
+        Col 3 (25%) – agent photo, centered between logo-end and page-end
+        Col 4 (25%) – empty right edge
+      This places the logo at the 50% mark and the agent photo at the 75%
+      mark — i.e. midway between the logo and the right edge.
+  ────────────────────────────────────────────────────────────────────── */}
   <div
     style={{
-      display: 'flex',
-      alignItems: 'flex-end',
-      justifyContent: 'center',
-      gap: '10px',
-      marginBottom: '10px',
-      flexWrap: 'wrap',
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr 1fr 1fr',
+      alignItems: 'center',
+      marginTop: '28px',
+      marginBottom: '20px',
+      minHeight: '110px',
     }}
   >
-    <h1 style={{
-      fontSize: '23px',
-      fontWeight: 'bold',
-      color: '#0f172a',
-      margin: 0,
-      lineHeight: 1.2,
-      textAlign: 'center',
-    }}>
-      Get Started - Registration
-    </h1>
+    {/* Col 1 – left balance spacer */}
+    <div />
 
-    {/* Agent photo – transparent background, no border/shadow/radius */}
-    <img
-      src={agentPhoto}
-      alt="Financial Agent"
-      style={{
-        width: '80px',
-        height: '80px',
-        objectFit: 'contain',        /* contain keeps transparent edges visible */
-        objectPosition: 'top center',
-        background: 'transparent',   /* no background fill */
-        flexShrink: 0,
-        display: 'block',
-      }}
-    />
+    {/* Col 2 – Logo in the center of the page */}
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <img
+        src={logo}
+        alt="AnNa Financial Group"
+        style={{ height: '110px', width: 'auto', objectFit: 'contain', display: 'block' }}
+      />
+    </div>
+
+    {/* Col 3 – Agent photo: midway between logo-right and page-right */}
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <img
+        src={agentPhoto}
+        alt="Financial Agent"
+        style={{
+          width: '90px',
+          height: '90px',
+          objectFit: 'contain',
+          objectPosition: 'top center',
+          background: 'transparent',
+          flexShrink: 0,
+          display: 'block',
+        }}
+      />
+    </div>
+
+    {/* Col 4 – right edge spacer */}
+    <div />
   </div>
+  {/* ── CHANGE END ─────────────────────────────────────────────────────── */}
+
+  {/* Heading below the logo+photo row */}
+  <h1 style={{
+    fontSize: '23px',
+    fontWeight: 'bold',
+    color: '#0f172a',
+    margin: '0 0 10px 0',
+    lineHeight: 1.2,
+    textAlign: 'center',
+  }}>
+    Get Started - Registration
+  </h1>
   {/* ── CHANGE END ─────────────────────────────────────────────────────── */}
   <p className="sub2 text-base md:text-lg text-slate-700 mb-4">
     We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
