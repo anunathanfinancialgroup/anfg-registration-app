@@ -160,7 +160,7 @@ export default function RegistrationForm() {
     <img
       src={agentPhoto}
       alt="Your Agent"
-      className="absolute top-0 right-0 w-20 h-20 md:w-24 md:h-24 rounded-xl object-cover object-top shadow-md border-2 border-white"
+      className="absolute top-0 right-0 w-14 h-14 md:w-16 md:h-16 rounded-lg object-cover object-top shadow-sm border-2 border-white"
     />
   </div>
   {/* ── CHANGE END ─────────────────────────────────────────────────────────── */}
