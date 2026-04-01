@@ -208,11 +208,6 @@ export default function RegistrationForm() {
   }}>
     Get Started - Registration
   </h1>
-    lineHeight: 1.2,
-    textAlign: 'center',
-  }}>
-    Get Started - Registration
-  </h1>
   {/* ── CHANGE END ─────────────────────────────────────────────────────── */}
   <p className="sub2 text-base md:text-lg text-slate-700 mb-4">
     We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
