@@ -159,23 +159,24 @@ export default function RegistrationForm() {
       display: 'grid',
       gridTemplateColumns: '1fr auto 1fr',
       alignItems: 'center',
-      marginTop: '28px',
-      marginBottom: '20px',
-      minHeight: '110px',
+      marginTop: '32px',
+      marginBottom: '24px',
+      minHeight: '140px',
     }}
   >
     {/* Col 1 – left spacer (mirrors right col so logo stays dead-centre) */}
     <div />
 
-    {/* Col 2 – Logo, auto width, perfectly centred on the row */}
+    {/* Col 2 – Logo, responsive size using clamp: 140px mobile → 200px desktop */}
     <img
       src={logo}
       alt="AnNa Financial Group"
       style={{
-        height: '110px',
+        height: 'clamp(140px, 18vw, 200px)',
         width: 'auto',
         objectFit: 'contain',
         display: 'block',
+        filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.08))',
       }}
     />
 
@@ -185,8 +186,8 @@ export default function RegistrationForm() {
         src={agentPhoto}
         alt="Financial Agent"
         style={{
-          width: '90px',
-          height: '90px',
+          width: 'clamp(80px, 10vw, 110px)',
+          height: 'clamp(80px, 10vw, 110px)',
           objectFit: 'contain',
           objectPosition: 'top center',
           background: 'transparent',
