@@ -83,16 +83,6 @@ function generateAvailableSlots() {
   return slots;
 }
 
-function groupSlotsByDate(slots) {
-  const groups = {};
-  for (const slot of slots) {
-    if (!groups[slot.dateKey]) {
-      groups[slot.dateKey] = { dateLabel: slot.dateLabel, slots: [] };
-    }
-    groups[slot.dateKey].slots.push(slot);
-  }
-  return Object.values(groups);
-}
 
 export default function RegistrationForm() {
   const [formData, setFormData] = useState({
@@ -122,7 +112,6 @@ export default function RegistrationForm() {
   const showClient = formData.interest_type === "client" || formData.interest_type === "both";
 
   const availableSlots = useMemo(() => generateAvailableSlots(), []);
-  const groupedSlots = useMemo(() => groupSlotsByDate(availableSlots), [availableSlots]);
   const selectedSlotInfo = useMemo(
     () => availableSlots.find((s) => s.value === selectedSlot) || null,
     [availableSlots, selectedSlot]
@@ -458,26 +447,12 @@ export default function RegistrationForm() {
                       <select
                         value={selectedSlot}
                         onChange={(e) => setSelectedSlot(e.target.value)}
-                        style={{
-                          width: "100%",
-                          border: "1px solid var(--line)",
-                          borderRadius: 10,
-                          padding: "10px 12px",
-                          fontSize: 14,
-                          outline: "none",
-                          background: "#fff",
-                          cursor: "pointer",
-                        }}
                       >
-                        <option value="">— Select a date &amp; time —</option>
-                        {groupedSlots.map((group) => (
-                          <optgroup label={group.dateLabel} key={group.dateLabel}>
-                            {group.slots.map((slot) => (
-                              <option value={slot.value} key={slot.value}>
-                                {slot.timeLabel} CT
-                              </option>
-                            ))}
-                          </optgroup>
+                        <option value="">— Select a date &amp; time slot —</option>
+                        {availableSlots.map((slot) => (
+                          <option value={slot.value} key={slot.value}>
+                            {slot.shortDate} | {slot.timeLabel} CT
+                          </option>
                         ))}
                       </select>
                     </div>
