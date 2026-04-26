@@ -58,8 +58,25 @@ function titleCase(x: string) {
   return x.charAt(0).toUpperCase() + x.slice(1);
 }
 
-// ── Google Calendar URL — includes client as guest so Chidam sees their acceptance ──
-// When Chidam clicks this link, the event opens with the client pre-added as a guest.
+// ── ICS line folding (RFC 5545 §3.1) ─────────────────────────────────────────
+// Lines must be ≤75 octets. Longer lines are folded with CRLF + single SPACE.
+function foldICSLine(line: string): string {
+  const MAXLEN = 75;
+  if (line.length <= MAXLEN) return line;
+  const chunks: string[] = [];
+  chunks.push(line.slice(0, MAXLEN));
+  let pos = MAXLEN;
+  while (pos < line.length) {
+    // continuation lines start with a space (counts as 1 char), so max content = 74
+    chunks.push(" " + line.slice(pos, pos + 74));
+    pos += 74;
+  }
+  return chunks.join("\r\n");
+}
+
+// ── Google Calendar URL ───────────────────────────────────────────────────────
+// Both Chidam AND the client are added as guests via the 'add' param so that
+// whoever clicks the button sees the other person pre-filled in the guest list.
 function buildGoogleCalendarUrl(slotLocalISO: string, clientEmail = ""): string {
   try {
     const [datePart, timePart] = slotLocalISO.split("T");
@@ -78,7 +95,9 @@ function buildGoogleCalendarUrl(slotLocalISO: string, clientEmail = ""): string 
       details: "Join our Zoom Meeting:\nhttps://us04web.zoom.us/j/9106338447?pwd=nmoPE8D31WH31nxBduZe7ihbrGToPy.1\n\nMeeting ID: 910 633 8447\nPasscode: AnNaFG2026",
       location: "https://us04web.zoom.us/j/9106338447?pwd=nmoPE8D31WH31nxBduZe7ihbrGToPy.1",
     });
-    // 'add' pre-fills the guest field — when Chidam saves, the client gets a Google invite
+    // Always add Chidam so client sees him as a guest when they click the button
+    params.append("add", "chidam.alagar@gmail.com");
+    // Also add the client so Chidam sees them when he clicks his copy
     if (clientEmail) params.append("add", clientEmail);
     return `https://calendar.google.com/calendar/render?${params.toString()}`;
   } catch {
@@ -87,10 +106,11 @@ function buildGoogleCalendarUrl(slotLocalISO: string, clientEmail = ""): string 
 }
 
 // ── ICS calendar invite ───────────────────────────────────────────────────────
-// Attaches a standard .ics file to the client email where:
-//   ORGANIZER = chidam.alagar@gmail.com  → event lives on Chidam's Google Calendar
-//   ATTENDEE  = client email             → client gets Accept / Decline buttons
-// When the client clicks "Yes" / Accept → the meeting appears on BOTH calendars.
+// ORGANIZER = chidam.alagar@gmail.com  → event lives on Chidam's Google Calendar
+// ATTENDEE  = client email             → client sees Accept / Decline buttons
+// METHOD:REQUEST  → Gmail renders Yes/No/Maybe buttons automatically
+// Line folding applied to every property so no line exceeds 75 octets (RFC 5545)
+// DESCRIPTION uses ICS escape: \n = literal backslash-n (newline in calendar app)
 function buildICSInvite(slotLocalISO: string, clientEmail: string, clientName: string): string {
   try {
     const [datePart, timePart] = slotLocalISO.split("T");
@@ -103,7 +123,9 @@ function buildICSInvite(slotLocalISO: string, clientEmail: string, clientName: s
     const fmt = (d: Date) =>
       `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
     const uid = `zoom-${startUTC.getTime()}@annafg.com`;
-    return [
+
+    // ICS lines — each one is folded individually before joining with CRLF
+    const lines = [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
       "PRODID:-//AnNa Financial Group//NONSGML v1.0//EN",
@@ -114,10 +136,18 @@ function buildICSInvite(slotLocalISO: string, clientEmail: string, clientName: s
       `DTSTAMP:${fmt(new Date())}`,
       `DTSTART:${fmt(startUTC)}`,
       `DTEND:${fmt(endUTC)}`,
-      "SUMMARY:Exclusive 360° Financial Solutions Meeting | AnNa Financial Group",
-      "DESCRIPTION:Join our Zoom Meeting:\nhttps://us04web.zoom.us/j/9106338447?pwd=nmoPE8D31WH31nxBduZe7ihbrGToPy.1\n\nMeeting ID: 910 633 8447\nPasscode: AnNaFG2026",
+      // SUMMARY: plain text title shown in the calendar event
+      "SUMMARY:Exclusive 360 Financial Solutions Meeting | AnNa Financial Group",
+      // DESCRIPTION: \n = ICS line-break (renders as newline in calendar app)
+      "DESCRIPTION:Join our Zoom Meeting:\n" +
+        "https://us04web.zoom.us/j/9106338447?pwd=nmoPE8D31WH31nxBduZe7ihbrGToPy.1\n\n" +
+        "Meeting ID: 910 633 8447\n" +
+        "Passcode: AnNaFG2026",
+      // LOCATION: shown as the map/link pin in the calendar event
       "LOCATION:https://us04web.zoom.us/j/9106338447?pwd=nmoPE8D31WH31nxBduZe7ihbrGToPy.1",
+      // ORGANIZER must match the Google account that owns the event
       "ORGANIZER;CN=Chidam Alagar:mailto:chidam.alagar@gmail.com",
+      // ATTENDEE gets Accept/Decline/Maybe buttons in Gmail
       `ATTENDEE;CN=${clientName};RSVP=TRUE;PARTSTAT=NEEDS-ACTION;ROLE=REQ-PARTICIPANT:mailto:${clientEmail}`,
       "STATUS:CONFIRMED",
       "SEQUENCE:0",
@@ -128,7 +158,10 @@ function buildICSInvite(slotLocalISO: string, clientEmail: string, clientName: s
       "END:VALARM",
       "END:VEVENT",
       "END:VCALENDAR",
-    ].join("\r\n");
+    ];
+
+    // Fold every line to ≤75 octets then join with CRLF as required by RFC 5545
+    return lines.map(foldICSLine).join("\r\n");
   } catch {
     return "";
   }
