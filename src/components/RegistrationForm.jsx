@@ -188,10 +188,14 @@ export default function RegistrationForm() {
           connectionType === "zoom_meeting"
             ? ["Zoom Session"]
             : formData.preferred_days,
+        // Always send a non-empty preferred_time so the edge function never
+        // sees a missing/empty value, regardless of connection type.
         preferred_time:
           connectionType === "zoom_meeting"
             ? "Zoom Meeting"
-            : formData.preferred_time.join(", "),
+            : formData.preferred_time.length > 0
+              ? formData.preferred_time.join(", ")
+              : "Not specified",
         // referred_by defaults to "Direct" if blank (edge function requires non-empty)
         referred_by: formData.referred_by.trim() || "Direct",
         selected_slot: selectedSlot || null,
