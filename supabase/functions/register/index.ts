@@ -58,15 +58,14 @@ function titleCase(x: string) {
   return x.charAt(0).toUpperCase() + x.slice(1);
 }
 
-// Build a Google Calendar "Add to Calendar" URL from a local ISO slot string
-function buildGoogleCalendarUrl(slotLocalISO: string): string {
+// ── Google Calendar URL — includes client as guest so Chidam sees their acceptance ──
+// When Chidam clicks this link, the event opens with the client pre-added as a guest.
+function buildGoogleCalendarUrl(slotLocalISO: string, clientEmail = ""): string {
   try {
     const [datePart, timePart] = slotLocalISO.split("T");
     const [year, month, day] = datePart.split("-").map(Number);
     const [hour] = timePart.split(":").map(Number);
     const pad = (n: number) => String(n).padStart(2, "0");
-    // Use America/Chicago offset: CDT = -05:00, CST = -06:00
-    // Approximate: months 3-11 are CDT (-5), others CST (-6)
     const offsetHours = (month >= 3 && month <= 11) ? 5 : 6;
     const startUTC = new Date(Date.UTC(year, month - 1, day, hour + offsetHours, 0, 0));
     const endUTC   = new Date(Date.UTC(year, month - 1, day, hour + offsetHours + 1, 0, 0));
@@ -76,13 +75,62 @@ function buildGoogleCalendarUrl(slotLocalISO: string): string {
       action: "TEMPLATE",
       text: "Exclusive 360° Financial Solutions Meeting | AnNa Financial Group",
       dates: `${fmt(startUTC)}/${fmt(endUTC)}`,
-      details:
-        "Join our Zoom Meeting:\nhttps://us04web.zoom.us/j/9106338447?pwd=nmoPE8D31WH31nxBduZe7ihbrGToPy.1\n\nMeeting ID: 910 633 8447\nPasscode: AnNaFG2026",
+      details: "Join our Zoom Meeting:\nhttps://us04web.zoom.us/j/9106338447?pwd=nmoPE8D31WH31nxBduZe7ihbrGToPy.1\n\nMeeting ID: 910 633 8447\nPasscode: AnNaFG2026",
       location: "https://us04web.zoom.us/j/9106338447?pwd=nmoPE8D31WH31nxBduZe7ihbrGToPy.1",
     });
+    // 'add' pre-fills the guest field — when Chidam saves, the client gets a Google invite
+    if (clientEmail) params.append("add", clientEmail);
     return `https://calendar.google.com/calendar/render?${params.toString()}`;
   } catch {
     return "https://calendar.google.com";
+  }
+}
+
+// ── ICS calendar invite ───────────────────────────────────────────────────────
+// Attaches a standard .ics file to the client email where:
+//   ORGANIZER = chidam.alagar@gmail.com  → event lives on Chidam's Google Calendar
+//   ATTENDEE  = client email             → client gets Accept / Decline buttons
+// When the client clicks "Yes" / Accept → the meeting appears on BOTH calendars.
+function buildICSInvite(slotLocalISO: string, clientEmail: string, clientName: string): string {
+  try {
+    const [datePart, timePart] = slotLocalISO.split("T");
+    const [year, month, day]   = datePart.split("-").map(Number);
+    const [hour]               = timePart.split(":").map(Number);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const offsetHours = (month >= 3 && month <= 11) ? 5 : 6;
+    const startUTC = new Date(Date.UTC(year, month - 1, day, hour + offsetHours, 0, 0));
+    const endUTC   = new Date(Date.UTC(year, month - 1, day, hour + offsetHours + 1, 0, 0));
+    const fmt = (d: Date) =>
+      `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+    const uid = `zoom-${startUTC.getTime()}@annafg.com`;
+    return [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//AnNa Financial Group//NONSGML v1.0//EN",
+      "CALSCALE:GREGORIAN",
+      "METHOD:REQUEST",
+      "BEGIN:VEVENT",
+      `UID:${uid}`,
+      `DTSTAMP:${fmt(new Date())}`,
+      `DTSTART:${fmt(startUTC)}`,
+      `DTEND:${fmt(endUTC)}`,
+      "SUMMARY:Exclusive 360° Financial Solutions Meeting | AnNa Financial Group",
+      "DESCRIPTION:Join our Zoom Meeting:\nhttps://us04web.zoom.us/j/9106338447?pwd=nmoPE8D31WH31nxBduZe7ihbrGToPy.1\n\nMeeting ID: 910 633 8447\nPasscode: AnNaFG2026",
+      "LOCATION:https://us04web.zoom.us/j/9106338447?pwd=nmoPE8D31WH31nxBduZe7ihbrGToPy.1",
+      "ORGANIZER;CN=Chidam Alagar:mailto:chidam.alagar@gmail.com",
+      `ATTENDEE;CN=${clientName};RSVP=TRUE;PARTSTAT=NEEDS-ACTION;ROLE=REQ-PARTICIPANT:mailto:${clientEmail}`,
+      "STATUS:CONFIRMED",
+      "SEQUENCE:0",
+      "BEGIN:VALARM",
+      "TRIGGER:-PT30M",
+      "ACTION:DISPLAY",
+      "DESCRIPTION:Reminder: AnNa Financial Group Zoom Meeting in 30 minutes",
+      "END:VALARM",
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ].join("\r\n");
+  } catch {
+    return "";
   }
 }
 
@@ -93,13 +141,14 @@ function buildZoomInviteEmail(
   slotDate: string,
   slotLabel: string,
   slotLocalISO: string,
-  logoUrl: string
+  logoUrl: string,
+  clientEmail = ""
 ): string {
   const logoHtml = logoUrl
     ? `<img src="${logoUrl}" alt="AnNa Financial Group" style="max-width:160px;height:auto;margin-bottom:10px;" />`
     : "";
 
-  const gcalUrl = slotLocalISO ? buildGoogleCalendarUrl(slotLocalISO) : "";
+  const gcalUrl = slotLocalISO ? buildGoogleCalendarUrl(slotLocalISO, clientEmail) : "";
 
   return `<!doctype html>
 <html>
@@ -324,6 +373,13 @@ Deno.serve(async (req) => {
     const clientFullName = `${firstName} ${lastName}`;
 
     // ── DB Insert (with fallback if migration 002 not yet applied) ────────────
+    // BOP_Date: stores the confirmed Zoom slot as a timestamptz value.
+    // BOP_Status: set to 'In-Progress' once a Zoom meeting is successfully booked.
+    const bopDate: string | null = isZoomMeeting && body.selected_slot
+      ? body.selected_slot   // local ISO e.g. "2025-05-05T18:00:00" — Postgres casts to timestamptz
+      : null;
+    const bopStatus: string | null = isZoomMeeting ? "In-Progress" : null;
+
     const fullPayload = {
       status: "new",
       interest_type: interestType,
@@ -335,17 +391,21 @@ Deno.serve(async (req) => {
       email,
       profession: String(body.profession ?? "").trim(),
       preferred_days: body.preferred_days ?? [],
-      preferred_time: preferredTimeNorm,   // never null — satisfies NOT NULL
+      preferred_time: preferredTimeNorm,
       referred_by: String(body.referred_by).trim(),
       connection_type: connectionType,
       selected_slot: body.selected_slot ?? null,
       selected_slot_label: body.selected_slot_label ?? null,
+      // BOP fields — only populated for confirmed Zoom bookings
+      BOP_Date: bopDate,
+      BOP_Status: bopStatus,
     };
 
     let { error: dbErr } = await supabase.from("client_registrations").insert(fullPayload);
 
     if (dbErr) {
-      // Fallback: columns from migration 002 may not exist yet
+      // Fallback: newer columns (connection_type, selected_slot, BOP_Date, BOP_Status)
+      // may not exist in older migrations — retry with only the base columns.
       console.error("Full insert failed, trying base payload:", dbErr.message);
       const basePayload = {
         status: fullPayload.status,
@@ -358,8 +418,9 @@ Deno.serve(async (req) => {
         email: fullPayload.email,
         profession: fullPayload.profession,
         preferred_days: fullPayload.preferred_days,
-        preferred_time: fullPayload.preferred_time,   // already non-null ""
+        preferred_time: fullPayload.preferred_time,
         referred_by: fullPayload.referred_by,
+        // BOP_Date and BOP_Status intentionally omitted — not present in older schemas
       };
       const fallback = await supabase.from("client_registrations").insert(basePayload);
       dbErr = fallback.error;
@@ -379,13 +440,14 @@ Deno.serve(async (req) => {
     let emailSubject: string;
 
     if (isZoomMeeting) {
-      emailSubject = "You're Invited - Exclusive 360 Financial Solutions Meeting | AnNa Financial Group";
+      emailSubject = "You're Invited – Exclusive 360° Financial Solutions Meeting | AnNa Financial Group";
       htmlBody = buildZoomInviteEmail(
         firstName, lastName,
         body.selected_slot_date ?? "",
         body.selected_slot_label ?? "",
         body.selected_slot ?? "",
-        LOGO_URL
+        LOGO_URL,
+        email  // passed so Google Calendar link pre-fills the client as a guest
       );
     } else {
       emailSubject = `Welcome ${firstName} ${lastName}! - Registration Confirmation`;
@@ -406,14 +468,32 @@ Deno.serve(async (req) => {
     }
 
     // ── Send email via Mailjet ────────────────────────────────────────────────
-    async function sendMail(toEmail: string, toName: string, subject: string, html: string) {
+    // ccList   : array of {Email, Name} objects to CC
+    // icsData  : raw ICS string — attached as calendar.ics so Gmail shows Accept/Decline
+    async function sendMail(
+      toEmail: string,
+      toName: string,
+      subject: string,
+      html: string,
+      ccList: { Email: string; Name: string }[] = [],
+      icsData = ""
+    ) {
       const message: Record<string, unknown> = {
-        From: { Email: FROM_EMAIL, Name: FROM_NAME },
-        To:   [{ Email: toEmail, Name: toName }],
+        From:    { Email: FROM_EMAIL, Name: FROM_NAME },
+        To:      [{ Email: toEmail, Name: toName }],
         Subject: subject,
         HTMLPart: html,
       };
-      if (BCC_EMAIL) message.Bcc = [{ Email: BCC_EMAIL, Name: "AnNa Financial Group" }];
+      if (ccList.length > 0) message.Cc = ccList;
+      if (icsData) {
+        // Base64-encode the ICS and attach — Gmail/Outlook show Accept/Decline buttons
+        const encoded = btoa(unescape(encodeURIComponent(icsData)));
+        message.Attachments = [{
+          ContentType: "text/calendar; method=REQUEST",
+          Filename:    "invite.ics",
+          Base64Content: encoded,
+        }];
+      }
 
       const res = await fetch("https://api.mailjet.com/v3.1/send", {
         method: "POST",
@@ -426,7 +506,26 @@ Deno.serve(async (req) => {
       return res;
     }
 
-    const clientRes = await sendMail(email, clientFullName, emailSubject, htmlBody);
+    // ── Email routing ─────────────────────────────────────────────────────────
+    // TO:  client
+    // CC:  AnNa Financial Group <anunathanfinancialgroup@gmail.com>
+    //      Chidam Alagar <chidam.alagar@gmail.com>
+    // ICS: attached for zoom bookings so the client sees Accept/Decline buttons
+    //      and accepting puts the event on Chidam's Google Calendar automatically.
+    const CHIDAM_EMAIL  = "chidam.alagar@gmail.com";
+    const ANFG_EMAIL    = "anunathanfinancialgroup@gmail.com";
+
+    const ccList = [
+      { Email: ANFG_EMAIL,   Name: "AnNa Financial Group" },
+      { Email: CHIDAM_EMAIL, Name: "Chidam Alagar" },
+    ];
+
+    // Build ICS for zoom meetings so Gmail shows Accept/Decline calendar buttons
+    const icsData = isZoomMeeting && body.selected_slot
+      ? buildICSInvite(body.selected_slot, email, clientFullName)
+      : "";
+
+    const clientRes = await sendMail(email, clientFullName, emailSubject, htmlBody, ccList, icsData);
 
     if (!clientRes.ok) {
       const detail = await clientRes.text();
@@ -436,8 +535,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Optional admin copy
-    if (ADMIN_NOTIFY_EMAIL) {
+    // Admin notification — sent separately to ADMIN_NOTIFY_EMAIL if configured,
+    // with a subject that makes the booking immediately obvious in the inbox.
+    if (ADMIN_NOTIFY_EMAIL && ADMIN_NOTIFY_EMAIL !== ANFG_EMAIL && ADMIN_NOTIFY_EMAIL !== CHIDAM_EMAIL) {
       const adminSubject = isZoomMeeting
         ? `New Zoom Booking: ${clientFullName} — ${body.selected_slot_date ?? ""} ${body.selected_slot_label ?? ""}`
         : `New Registration: ${clientFullName} - ${interestTypeFormatted}`;
