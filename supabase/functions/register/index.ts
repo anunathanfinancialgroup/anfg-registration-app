@@ -266,8 +266,11 @@ Deno.serve(async (req) => {
     }
 
     if (isZoomMeeting) {
+      // Zoom path: only a selected_slot is required.
+      // preferred_time is NOT validated here — it is always set to "Zoom Meeting" below.
       if (!body.selected_slot || String(body.selected_slot).trim() === "") missing.push("selected_slot");
     } else {
+      // Meeting-preference path: both preferred_days and preferred_time are required.
       if (!Array.isArray(body.preferred_days) || body.preferred_days.length === 0) missing.push("preferred_days");
       const pt = body.preferred_time;
       if (!pt || (Array.isArray(pt) ? pt.length === 0 : String(pt).trim() === "")) missing.push("preferred_time");
@@ -307,10 +310,13 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
-    // preferred_time is always a non-null string to satisfy the DB NOT NULL constraint
-    const preferredTimeNorm: string = Array.isArray(body.preferred_time)
-      ? body.preferred_time.join(", ")
-      : (body.preferred_time ? String(body.preferred_time) : "");
+    // preferred_time: for zoom meetings always use "Zoom Meeting" regardless of what
+    // the client sends, so we never hit a missing/null value on insert.
+    const preferredTimeNorm: string = isZoomMeeting
+      ? "Zoom Meeting"
+      : Array.isArray(body.preferred_time)
+        ? body.preferred_time.join(", ")
+        : (body.preferred_time ? String(body.preferred_time) : "");
 
     const firstName   = String(body.first_name).trim();
     const lastName    = String(body.last_name).trim();
