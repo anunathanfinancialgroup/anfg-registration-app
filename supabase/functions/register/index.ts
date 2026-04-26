@@ -10,8 +10,12 @@ type Payload = {
   email: string;
   profession?: string;
   preferred_days: string[];
-  preferred_time: "AM" | "PM";
+  preferred_time?: string | string[];
   referred_by: string;
+  connection_type?: "zoom_meeting" | "meeting_preference";
+  selected_slot?: string;        // local ISO datetime string "2025-05-05T18:00:00"
+  selected_slot_label?: string;  // "6:00 PM – 7:00 PM"
+  selected_slot_date?: string;   // "Monday, May 5, 2025"
 };
 
 const BUSINESS_OPPORTUNITY_LABELS: Record<string, string> = {
@@ -30,9 +34,6 @@ const WEALTH_SOLUTION_LABELS: Record<string, string> = {
   tax_optimization: "Tax Optimization",
   retirement: "Retirement",
   legacy: "Legacy",
-//  business_solutions: "Business Solutions (Entry/Exit, Key Person, etc.)",
-//  health_insurance: "Health Insurance, Medicare and Medicaid",
-// notary_services: "Notary Services",
 };
 
 function escapeHtml(input: string) {
@@ -55,6 +56,250 @@ function isValidEmail(email: string) {
 function titleCase(x: string) {
   if (!x) return x;
   return x.charAt(0).toUpperCase() + x.slice(1);
+}
+
+// Base64-encode a UTF-8 string (for ICS attachment)
+function encodeBase64(str: string): string {
+  const bytes = new TextEncoder().encode(str);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+// Format a Date as ICS local datetime: YYYYMMDDTHHMMSS
+function icsDateTime(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}T${pad(date.getHours())}${pad(date.getMinutes())}00`;
+}
+
+// Generates an ICS VCALENDAR string for a 1-hour meeting in Central Time
+function generateICS(
+  slotLocalISO: string, // "2025-05-05T18:00:00"
+  clientName: string,
+  clientEmail: string
+): string {
+  // Parse the local ISO string (no timezone suffix) as local date components
+  const [datePart, timePart] = slotLocalISO.split("T");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hour, minute] = timePart.split(":").map(Number);
+
+  const startDt = new Date(year, month - 1, day, hour, minute, 0);
+  const endDt = new Date(year, month - 1, day, hour + 1, minute, 0);
+
+  const dtStamp = icsDateTime(new Date());
+  const dtStart = icsDateTime(startDt);
+  const dtEnd = icsDateTime(endDt);
+  const uid = `${Date.now()}-anfg-meeting@anfg.com`;
+
+  const description =
+    "Join us for an Exclusive 360° Financial Solutions Meeting!\\n\\n" +
+    "We will explore:\\n" +
+    "✅ Business Entrepreneurship Opportunities\\n" +
+    "✅ 360° Financial Solutions\\n" +
+    "✅ Family Protection Strategies\\n\\n" +
+    "─────────────────────────────\\n" +
+    "JOIN OUR ZOOM MEETING\\n" +
+    "─────────────────────────────\\n" +
+    "Click to Join: https://us04web.zoom.us/j/9106338447?pwd=nmoPE8D31WH31nxBduZe7ihbrGToPy.1\\n" +
+    "Meeting ID: 910 633 8447\\n" +
+    "Passcode: AnNaFG2026\\n\\n" +
+    "Warm regards,\\nChidam Alagar\\nFinancial Solutions Advisor\\nAnNa Financial Group | Leander\\, TX";
+
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//AnNa Financial Group//ANFG Meeting Scheduler//EN",
+    "METHOD:REQUEST",
+    "BEGIN:VEVENT",
+    `UID:${uid}`,
+    `DTSTAMP;TZID=America/Chicago:${dtStamp}`,
+    `DTSTART;TZID=America/Chicago:${dtStart}`,
+    `DTEND;TZID=America/Chicago:${dtEnd}`,
+    "SUMMARY:Exclusive 360° Financial Solutions Meeting | AnNa Financial Group",
+    `DESCRIPTION:${description}`,
+    "LOCATION:https://us04web.zoom.us/j/9106338447?pwd=nmoPE8D31WH31nxBduZe7ihbrGToPy.1",
+    "ORGANIZER;CN=Chidam Alagar:mailto:chidam.alagar@gmail.com",
+    `ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;CN=${clientName}:mailto:${clientEmail}`,
+    "STATUS:CONFIRMED",
+    "SEQUENCE:0",
+    "BEGIN:VALARM",
+    "TRIGGER:-PT30M",
+    "ACTION:DISPLAY",
+    "DESCRIPTION:AnNa Financial Group Zoom Meeting in 30 minutes",
+    "END:VALARM",
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+}
+
+// Zoom invite email HTML using the provided template
+function buildZoomInviteEmail(
+  firstName: string,
+  lastName: string,
+  slotDate: string,
+  slotLabel: string,
+  logoUrl: string
+): string {
+  const logoHtml = logoUrl
+    ? `<img src="${logoUrl}" alt="AnNa Financial Group" style="max-width:160px;height:auto;margin-bottom:10px;" />`
+    : "";
+
+  return `
+<!doctype html>
+<html>
+  <body style="font-family:Arial,Helvetica,sans-serif;color:#0f172a;line-height:1.6;margin:0;padding:0;">
+    <div style="max-width:640px;margin:0 auto;padding:28px 22px;">
+
+      <div style="text-align:center;margin-bottom:24px;">
+        ${logoHtml}
+        <h2 style="margin:8px 0 4px;font-size:20px;color:#0f172a;">
+          You're Invited – Exclusive 360° Financial Solutions Meeting
+        </h2>
+        <div style="color:#14b8a6;font-weight:700;font-size:14px;letter-spacing:0.04em;">
+          AnNa Financial Group
+        </div>
+      </div>
+
+      <p>Dear <b>${escapeHtml(firstName)} ${escapeHtml(lastName)}</b>,</p>
+
+      <p>I hope this message finds you well! I'd love to connect with you for a complimentary <b>Financial Solutions Meeting</b> designed specifically with you and your family in mind.</p>
+
+      <p style="font-weight:700;margin-bottom:6px;">During our session, we'll explore:</p>
+
+      <p style="margin:6px 0;">✅ <b>Business Entrepreneurship Opportunities</b> – Discover pathways to grow or launch your own venture</p>
+      <p style="margin:6px 0;">✅ <b>360° Financial Solutions</b> – A comprehensive approach covering protection, wealth-building, and planning</p>
+      <p style="margin:6px 0;">✅ <b>Family Protection Strategies</b> – Ensuring your loved ones are financially secure no matter what life brings</p>
+
+      <p>This is a <b>no-obligation conversation</b> — my goal is simply to understand your vision and share tools that can help you achieve it.</p>
+
+      ${
+        slotDate && slotLabel
+          ? `<div style="background:#f0fdf9;border:1px solid #14b8a6;border-radius:12px;padding:14px 16px;margin:18px 0;">
+              <div style="font-weight:700;font-size:15px;color:#0f766e;margin-bottom:4px;">📅 Your Scheduled Meeting</div>
+              <div style="font-size:14px;color:#0f172a;">${escapeHtml(slotDate)}</div>
+              <div style="font-size:14px;color:#0f172a;font-weight:600;">${escapeHtml(slotLabel)} Central Time (CT)</div>
+            </div>`
+          : ""
+      }
+
+      <div style="background:#f0f9ff;border:1px solid #0ea5e9;border-radius:12px;padding:16px 18px;margin:18px 0;">
+        <div style="text-align:center;font-weight:700;font-size:15px;color:#0369a1;margin-bottom:12px;">
+          ─────────────────────────────<br/>
+          📅 JOIN OUR ZOOM MEETING<br/>
+          ─────────────────────────────
+        </div>
+        <div style="margin:6px 0;font-size:14px;">
+          👉 <b>Click to Join:</b>
+          <a href="https://us04web.zoom.us/j/9106338447?pwd=nmoPE8D31WH31nxBduZe7ihbrGToPy.1"
+             style="color:#0369a1;">
+            https://us04web.zoom.us/j/9106338447
+          </a>
+        </div>
+        <div style="margin:4px 0;font-size:14px;">📋 <b>Meeting ID:</b> 910 633 8447</div>
+        <div style="margin:4px 0;font-size:14px;">🔑 <b>Passcode:</b> AnNaFG2026</div>
+      </div>
+
+      <p style="margin-top:8px;font-size:13px;color:#475569;">
+        💡 A calendar invite (.ics) is attached to this email — click it to add this meeting to your Google Calendar or any other calendar app.
+      </p>
+
+      <p>I look forward to being a trusted partner on your financial journey. Please feel free to reply or call me directly to confirm your spot or ask any questions.</p>
+
+      <div style="margin-top:24px;padding-top:16px;border-top:1px solid #e2e8f0;">
+        <p style="margin:0;">Warm regards,<br/>
+        <b>Chidam Alagar</b><br/>
+        Financial Solutions Advisor<br/>
+        AnNa Financial Group | Leander, TX</p>
+      </div>
+    </div>
+  </body>
+</html>`.trim();
+}
+
+// Standard registration confirmation email
+function buildRegistrationEmail(
+  firstName: string,
+  lastName: string,
+  interestTypeFormatted: string,
+  payload: {
+    preferred_days: string[];
+    preferred_time?: string | string[] | null;
+    referred_by: string;
+    phone: string;
+    email: string;
+    profession?: string;
+    business_opportunities: string[];
+    wealth_solutions: string[];
+  },
+  showEntrepreneurship: boolean,
+  showClient: boolean,
+  fromName: string,
+  logoUrl: string
+): string {
+  const logoHtml = logoUrl
+    ? `<img src="${logoUrl}" alt="AnNa Financial Group" style="max-width:160px;height:auto;margin-bottom:10px;" />`
+    : "";
+
+  const preferredTime = Array.isArray(payload.preferred_time)
+    ? payload.preferred_time.join(", ")
+    : payload.preferred_time ?? "";
+
+  return `
+<!doctype html>
+<html>
+  <body style="font-family:Arial,Helvetica,sans-serif; color:#0f172a; line-height:1.2;">
+    <div style="max-width:640px;margin:0 auto;padding:22px;">
+      <div style="text-align:center;margin-bottom:18px;">
+        ${logoHtml}
+        <h2 style="margin:0;">Registration Confirmation</h2>
+        <div style="color:#475569;font-size:13px;margin-top:6px;">We're excited to connect with you and introduce an opportunity that combines purpose with prosperity!</div>
+      </div>
+
+      <p>Dear <b>${escapeHtml(firstName)} ${escapeHtml(lastName)}</b>,</p>
+      <p>Thank you for registering with <b>${escapeHtml(fromName)}</b>. We received your information and will contact you shortly.</p>
+
+      <div style="background:#f8fafc;border-left:4px solid #14b8a6;padding:12px 14px;border-radius:10px;">
+        <div style="font-weight:bold;margin-bottom:6px;">Summary</div>
+        <div><b>Interested In:</b> ${interestTypeFormatted}</div>
+        <div><b>Preferred Days:</b> ${(payload.preferred_days || []).join(", ")}</div>
+        <div><b>Preferred Time:</b> ${preferredTime}</div>
+        <div><b>Referred By:</b> ${escapeHtml(payload.referred_by)}</div>
+      </div>
+
+      <p style="margin-top:16px;"><b>Phone:</b> ${escapeHtml(payload.phone)}<br/>
+      <b>Email:</b> ${escapeHtml(payload.email)}${payload.profession ? `<br/><b>Profession:</b> ${escapeHtml(payload.profession)}` : ""}</p>
+
+      ${
+        showEntrepreneurship
+          ? `<div style="margin-top:16px;">
+              <div style="font-weight:bold;">Entrepreneurship - Business Opportunity</div>
+              <ul style="margin:8px 0 0 18px;">
+                ${labelsFor(payload.business_opportunities, BUSINESS_OPPORTUNITY_LABELS).map((x) => `<li>${escapeHtml(x)}</li>`).join("")}
+              </ul>
+            </div>`
+          : ""
+      }
+
+      ${
+        showClient
+          ? `<div style="margin-top:16px;">
+              <div style="font-weight:bold;">Client - Wealth Building Solutions</div>
+              <ul style="margin:8px 0 0 18px;">
+                ${labelsFor(payload.wealth_solutions, WEALTH_SOLUTION_LABELS).map((x) => `<li>${escapeHtml(x)}</li>`).join("")}
+              </ul>
+            </div>`
+          : ""
+      }
+
+      <div style="margin-top:20px;padding-top:14px;border-top:1px solid #e2e8f0;color:#475569;">
+        Regards,<br/>
+        <b>${escapeHtml(fromName)}</b>
+      </div>
+    </div>
+  </body>
+</html>`.trim();
 }
 
 const corsHeaders = {
@@ -82,32 +327,36 @@ Deno.serve(async (req) => {
     });
   }
 
-  // Basic validation
+  const connectionType = body.connection_type ?? "meeting_preference";
+  const isZoomMeeting = connectionType === "zoom_meeting";
+
+  // Base required fields
   const missing: string[] = [];
-  const must = ["interest_type","first_name","last_name","phone","email","preferred_time","referred_by"];
-  for (const k of must) {
+  const baseRequired = ["interest_type", "first_name", "last_name", "phone", "email", "referred_by"];
+  for (const k of baseRequired) {
     // deno-lint-ignore no-explicit-any
     const v = (body as any)[k];
     if (!v || String(v).trim() === "") missing.push(k);
   }
-  if (!Array.isArray(body.preferred_days) || body.preferred_days.length === 0) missing.push("preferred_days");
-  if (!isValidEmail(body.email)) return new Response(JSON.stringify({ ok: false, error: "Invalid email" }), {
-    status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
-  });
 
-  const interestType = String(body.interest_type || "").toLowerCase();
-  const showEntrepreneurship = interestType === "entrepreneurship" || interestType === "both";
-  const showClient = interestType === "client" || interestType === "both";
-
-  if (showEntrepreneurship && (!Array.isArray(body.business_opportunities) || body.business_opportunities.length === 0)) {
-    return new Response(JSON.stringify({ ok: false, error: "Select at least one entrepreneurship option" }), {
-      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
+  if (!isValidEmail(body.email)) {
+    return new Response(JSON.stringify({ ok: false, error: "Invalid email" }), {
+      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-  if (showClient && (!Array.isArray(body.wealth_solutions) || body.wealth_solutions.length === 0)) {
-    return new Response(JSON.stringify({ ok: false, error: "Select at least one wealth solution option" }), {
-      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
+
+  if (isZoomMeeting) {
+    if (!body.selected_slot || String(body.selected_slot).trim() === "") {
+      missing.push("selected_slot");
+    }
+  } else {
+    // meeting_preference path requires days and time
+    if (!Array.isArray(body.preferred_days) || body.preferred_days.length === 0) {
+      missing.push("preferred_days");
+    }
+    const pt = body.preferred_time;
+    const ptEmpty = !pt || (Array.isArray(pt) ? pt.length === 0 : String(pt).trim() === "");
+    if (ptEmpty) missing.push("preferred_time");
   }
 
   if (missing.length) {
@@ -117,9 +366,23 @@ Deno.serve(async (req) => {
     });
   }
 
+  const interestType = String(body.interest_type || "").toLowerCase();
+  const showEntrepreneurship = interestType === "entrepreneurship" || interestType === "both";
+  const showClient = interestType === "client" || interestType === "both";
+
+  if (showEntrepreneurship && (!Array.isArray(body.business_opportunities) || body.business_opportunities.length === 0)) {
+    return new Response(JSON.stringify({ ok: false, error: "Select at least one entrepreneurship option" }), {
+      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  if (showClient && (!Array.isArray(body.wealth_solutions) || body.wealth_solutions.length === 0)) {
+    return new Response(JSON.stringify({ ok: false, error: "Select at least one wealth solution option" }), {
+      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
   const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
   const MAILJET_API_KEY = Deno.env.get("MAILJET_API_KEY")!;
   const MAILJET_SECRET_KEY = Deno.env.get("MAILJET_SECRET_KEY")!;
   const FROM_EMAIL = Deno.env.get("FROM_EMAIL")!;
@@ -129,6 +392,10 @@ Deno.serve(async (req) => {
   const BCC_EMAIL = Deno.env.get("BCC_EMAIL") ?? "";
 
   const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+
+  const preferredTimeNorm = Array.isArray(body.preferred_time)
+    ? body.preferred_time.join(", ")
+    : (body.preferred_time ?? null);
 
   const payloadToInsert = {
     status: "new",
@@ -141,8 +408,11 @@ Deno.serve(async (req) => {
     email: String(body.email).trim(),
     profession: String(body.profession ?? "").trim(),
     preferred_days: body.preferred_days ?? [],
-    preferred_time: body.preferred_time,
+    preferred_time: preferredTimeNorm,
     referred_by: String(body.referred_by).trim(),
+    connection_type: connectionType,
+    selected_slot: body.selected_slot ?? null,
+    selected_slot_label: body.selected_slot_label ?? null,
   };
 
   const { error: dbErr } = await supabase.from("client_registrations").insert(payloadToInsert);
@@ -152,113 +422,125 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-const interestTypeFormatted =
+
+  const interestTypeFormatted =
     interestType === "both" ? "Both" : titleCase(interestType);
 
-  // Branded HTML email (simple + clean)
-  const htmlBody = `
-<!doctype html>
-<html>
-  <body style="font-family:Arial,Helvetica,sans-serif; color:#0f172a; line-height:1.2;">
-    <div style="max-width:640px;margin:0 auto;padding:22px;">
-      <div style="text-align:center;margin-bottom:18px;">
-        ${ ? `<img src="${}" alt="AnNa Financial Group" style="max-width:160px;height:auto;margin-bottom:10px;" />` : ""}
-        <h2 style="margin:0;">Registration Confirmation</h2>
-        <div style="color:#475569;font-size:13px;margin-top:6px;">We're excited to connect with you and introduce an opportunity that combines purpose with prosperity!</div>
-      </div>
+  const firstName = payloadToInsert.first_name;
+  const lastName = payloadToInsert.last_name;
+  const clientFullName = `${firstName} ${lastName}`;
 
-      <p>Dear <b>${escapeHtml(payloadToInsert.first_name)} ${escapeHtml(payloadToInsert.last_name)}</b>,</p>
-      <p>Thank you for registering with <b>${FROM_NAME}</b>.Thank you for registering with <b>AnNa Financial Group</b>. We received your information and will contact you shortly.</p>
+  // Build email body depending on connection type
+  let htmlBody: string;
+  let emailSubject: string;
+  let mailjetMessage: Record<string, unknown>;
 
-      <div style="background:#f8fafc;border-left:4px solid #14b8a6;padding:12px 14px;border-radius:10px;">
-        <div style="font-weight:bold;margin-bottom:6px;">Summary</div>
-        <div><b>Interested In:</b> ${interestTypeFormatted}</div>
-        <div><b>Preferred Days:</b> ${(payloadToInsert.preferred_days || []).join(", ")}</div>
-        <div><b>Preferred Time:</b> ${payloadToInsert.preferred_time}</div>
-        <div><b>Referred By:</b> ${escapeHtml(payloadToInsert.referred_by)}</div>
-      </div>
+  if (isZoomMeeting) {
+    emailSubject =
+      "You're Invited – Exclusive 360° Financial Solutions Meeting | AnNa Financial Group";
+    htmlBody = buildZoomInviteEmail(
+      firstName,
+      lastName,
+      body.selected_slot_date ?? "",
+      body.selected_slot_label ?? "",
+      LOGO_URL
+    );
 
-      <p style="margin-top:16px;"><b>Phone:</b> ${escapeHtml(payloadToInsert.phone)}<br/>
-      <b>Email:</b> ${escapeHtml(payloadToInsert.email)}${payloadToInsert.profession ? `<br/><b>Profession:</b> ${escapeHtml(payloadToInsert.profession)}` : ""}</p>
+    // Generate ICS calendar invite
+    const icsContent = generateICS(
+      body.selected_slot!,
+      clientFullName,
+      payloadToInsert.email
+    );
+    const icsBase64 = encodeBase64(icsContent);
 
-      ${
-        showEntrepreneurship
-          ? `<div style="margin-top:16px;">
-              <div style="font-weight:bold;">Entrepreneurship - Business Opportunity</div>
-              <ul style="margin:8px 0 0 18px;">
-                ${labelsFor(payloadToInsert.business_opportunities, BUSINESS_OPPORTUNITY_LABELS).map((x) => `<li>${escapeHtml(x)}</li>`).join("")}
-              </ul>
-            </div>`
-          : ""
-      }
+    mailjetMessage = {
+      From: { Email: FROM_EMAIL, Name: FROM_NAME },
+      To: [{ Email: payloadToInsert.email, Name: clientFullName }],
+      ...(BCC_EMAIL ? { Bcc: [{ Email: BCC_EMAIL, Name: "AnNa Financial Group" }] } : {}),
+      Subject: emailSubject,
+      HTMLPart: htmlBody,
+      Attachments: [
+        {
+          ContentType: "text/calendar; method=REQUEST",
+          Filename: "meeting-invite.ics",
+          Base64Content: icsBase64,
+        },
+      ],
+    };
+  } else {
+    emailSubject = `Welcome ${firstName}, ${lastName}! - Registration Confirmation`;
+    htmlBody = buildRegistrationEmail(
+      firstName,
+      lastName,
+      interestTypeFormatted,
+      {
+        preferred_days: payloadToInsert.preferred_days,
+        preferred_time: payloadToInsert.preferred_time,
+        referred_by: payloadToInsert.referred_by,
+        phone: payloadToInsert.phone,
+        email: payloadToInsert.email,
+        profession: payloadToInsert.profession,
+        business_opportunities: payloadToInsert.business_opportunities,
+        wealth_solutions: payloadToInsert.wealth_solutions,
+      },
+      showEntrepreneurship,
+      showClient,
+      FROM_NAME,
+      LOGO_URL
+    );
 
-      ${
-        showClient
-          ? `<div style="margin-top:16px;">
-              <div style="font-weight:bold;">Client - Wealth Building Solutions</div>
-              <ul style="margin:8px 0 0 18px;">
-                ${labelsFor(payloadToInsert.wealth_solutions, WEALTH_SOLUTION_LABELS).map((x) => `<li>${escapeHtml(x)}</li>`).join("")}
-              </ul>
-            </div>`
-          : ""
-      }
+    mailjetMessage = {
+      From: { Email: FROM_EMAIL, Name: FROM_NAME },
+      To: [{ Email: payloadToInsert.email, Name: clientFullName }],
+      ...(BCC_EMAIL ? { Bcc: [{ Email: BCC_EMAIL, Name: "AnNa Financial Group" }] } : {}),
+      Subject: emailSubject,
+      HTMLPart: htmlBody,
+    };
+  }
 
-      <div style="margin-top:20px;padding-top:14px;border-top:1px solid #e2e8f0;color:#475569;">
-        Regards,<br/>
-        <b>${FROM_NAME}</b>
-      </div>
-    </div>
-  </body>
-</html>`.trim();
-
-  async function sendMail(toEmail: string, toName: string, subject: string, html: string) {
-    const res = await fetch("https://api.mailjet.com/v3.1/send", {
+  async function sendMail(message: Record<string, unknown>) {
+    return fetch("https://api.mailjet.com/v3.1/send", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Basic " + btoa(`${MAILJET_API_KEY}:${MAILJET_SECRET_KEY}`),
       },
-      body: JSON.stringify({
-        Messages: [
-          {
-            From: { Email: FROM_EMAIL, Name: FROM_NAME },
-            To: [{ Email: toEmail, Name: toName }],
-            ...(BCC_EMAIL ? { Bcc: [{ Email: BCC_EMAIL, Name: "AnNa Financial Group" }] } : {}),
-            Subject: subject,
-            HTMLPart: html,
-          },
-        ],
-      }),
+      body: JSON.stringify({ Messages: [message] }),
     });
-    return res;
   }
 
-  // Email to client - PERSONALIZED subject
-  const clientRes = await sendMail(
-    payloadToInsert.email,
-    `${payloadToInsert.first_name} ${payloadToInsert.last_name}`,
-    `Welcome ${payloadToInsert.first_name}, ${payloadToInsert.last_name}! - Registration Confirmation`,
-    htmlBody
-  );
+  const clientRes = await sendMail(mailjetMessage);
 
   if (!clientRes.ok) {
     const detail = await clientRes.text();
-    console.error('Email send failed:', detail);
+    console.error("Email send failed:", detail);
     return new Response(JSON.stringify({ ok: false, error: "Email failed", detail }), {
       status: 502,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
-  // Optional admin notification - SHOWS client name
+  // Admin notification
   if (ADMIN_NOTIFY_EMAIL) {
-    const adminHtml = htmlBody.replace("Registration Confirmation", "New Client Registration");
-    await sendMail(
-      ADMIN_NOTIFY_EMAIL, 
-      "Admin", 
-      `New Registration: ${payloadToInsert.first_name},  ${payloadToInsert.last_name} - ${interestTypeFormatted}`,
-      adminHtml
+    const adminSubject = isZoomMeeting
+      ? `New Zoom Meeting Booked: ${clientFullName} – ${body.selected_slot_date ?? ""} ${body.selected_slot_label ?? ""}`
+      : `New Registration: ${clientFullName} - ${interestTypeFormatted}`;
+
+    const adminHtml = htmlBody.replace(
+      "Registration Confirmation",
+      "New Client Registration"
+    ).replace(
+      "You're Invited",
+      `New Zoom Booking: ${clientFullName}`
     );
+
+    await sendMail({
+      From: { Email: FROM_EMAIL, Name: FROM_NAME },
+      To: [{ Email: ADMIN_NOTIFY_EMAIL, Name: "Admin" }],
+      Subject: adminSubject,
+      HTMLPart: adminHtml,
+    });
   }
 
   return new Response(JSON.stringify({ ok: true }), {

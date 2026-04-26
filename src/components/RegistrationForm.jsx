@@ -3,11 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient.js";
 import logo from "../assets/anunathan-logo.png";
-// ── CHANGE START ─────────────────────────────────────────────────────────────
-// Added import for the agent photo.
-// Place me.png inside src/assets/ in the repository (same folder as the logo).
 import agentPhoto from "../assets/me.png";
-// ── CHANGE END ───────────────────────────────────────────────────────────────
 
 const BUSINESS_OPPORTUNITIES = [
   { id: "financial_freedom", label: "Financial and Time Freedom" },
@@ -25,9 +21,6 @@ const WEALTH_SOLUTIONS = [
   { id: "tax_optimization", label: "Tax Optimization" },
   { id: "retirement", label: "Retirement" },
   { id: "legacy", label: "Legacy" },
- // { id: "business_solutions", label: "Business Solutions (Entry/Exit, Key Person, etc.)" },
- // { id: "health_insurance", label: "Health Insurance, Medicare and Medicaid" },
- // { id: "notary_services", label: "Notary Services" },
 ];
 
 const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
@@ -37,9 +30,73 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
 }
 
+function formatDisplayTime(hour) {
+  const period = hour >= 12 ? "PM" : "AM";
+  const h12 = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+  return `${h12}:00 ${period}`;
+}
+
+// Format date as local ISO without timezone suffix: "2025-05-05T18:00:00"
+function formatLocalISO(date) {
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:00:00`;
+}
+
+function generateAvailableSlots() {
+  const slots = [];
+  const now = new Date();
+  const end = new Date(now);
+  end.setDate(end.getDate() + 42); // 6 weeks
+
+  const cursor = new Date(now);
+  cursor.setHours(0, 0, 0, 0);
+  cursor.setDate(cursor.getDate() + 1); // start from tomorrow
+
+  while (cursor <= end) {
+    const dow = cursor.getDay(); // 0=Sun, 6=Sat
+    let hours = [];
+    if (dow >= 1 && dow <= 5) hours = [18, 19];       // Mon-Fri: 6 PM, 7 PM
+    else if (dow === 6) hours = [10, 11, 16, 17];      // Sat: 10 AM, 11 AM, 4 PM, 5 PM
+    else if (dow === 0) hours = [15, 16, 17];           // Sun: 3 PM, 4 PM, 5 PM
+
+    for (const h of hours) {
+      const slotStart = new Date(cursor);
+      slotStart.setHours(h, 0, 0, 0);
+      if (slotStart > now) {
+        const dateLabel = slotStart.toLocaleDateString("en-US", {
+          weekday: "long", month: "long", day: "numeric", year: "numeric",
+        });
+        const shortDate = slotStart.toLocaleDateString("en-US", {
+          weekday: "short", month: "short", day: "numeric",
+        });
+        slots.push({
+          value: formatLocalISO(slotStart),
+          timeLabel: `${formatDisplayTime(h)} – ${formatDisplayTime(h + 1)}`,
+          dateLabel,
+          shortDate,
+          dateKey: slotStart.toDateString(),
+        });
+      }
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return slots;
+}
+
+function groupSlotsByDate(slots) {
+  const groups = {};
+  for (const slot of slots) {
+    if (!groups[slot.dateKey]) {
+      groups[slot.dateKey] = { dateLabel: slot.dateLabel, slots: [] };
+    }
+    groups[slot.dateKey].slots.push(slot);
+  }
+  return Object.values(groups);
+}
+
 export default function RegistrationForm() {
   const [formData, setFormData] = useState({
-    interest_type: "", // entrepreneurship | client | both
+    interest_type: "",
     business_opportunities: [],
     wealth_solutions: [],
     first_name: "",
@@ -47,10 +104,13 @@ export default function RegistrationForm() {
     phone: "",
     email: "",
     profession: "",
-    preferred_days: [], // multi-select
-    preferred_time: [], // "", // AM | PM
+    preferred_days: [],
+    preferred_time: [],
     referred_by: "",
   });
+
+  const [connectionType, setConnectionType] = useState(""); // "zoom_meeting" | "meeting_preference"
+  const [selectedSlot, setSelectedSlot] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -61,23 +121,36 @@ export default function RegistrationForm() {
   const showEntrepreneurship = formData.interest_type === "entrepreneurship" || formData.interest_type === "both";
   const showClient = formData.interest_type === "client" || formData.interest_type === "both";
 
+  const availableSlots = useMemo(() => generateAvailableSlots(), []);
+  const groupedSlots = useMemo(() => groupSlotsByDate(availableSlots), [availableSlots]);
+  const selectedSlotInfo = useMemo(
+    () => availableSlots.find((s) => s.value === selectedSlot) || null,
+    [availableSlots, selectedSlot]
+  );
+
   const canSubmit = useMemo(() => {
-    const requiredOk =
+    const baseOk =
       formData.interest_type &&
       formData.first_name.trim() &&
       formData.last_name.trim() &&
       formData.phone.trim() &&
       isValidEmail(formData.email) &&
-      formData.preferred_days.length > 0 &&
-      formData.preferred_time.length > 0 &&
-      formData.referred_by.trim();
+      formData.referred_by.trim() &&
+      connectionType;
+
+    const meetingOk =
+      connectionType === "zoom_meeting"
+        ? Boolean(selectedSlot)
+        : connectionType === "meeting_preference"
+        ? formData.preferred_days.length > 0 && formData.preferred_time.length > 0
+        : false;
 
     const interestOk =
       (showEntrepreneurship ? formData.business_opportunities.length > 0 : true) &&
       (showClient ? formData.wealth_solutions.length > 0 : true);
 
-    return Boolean(requiredOk && interestOk);
-  }, [formData, showEntrepreneurship, showClient]);
+    return Boolean(baseOk && meetingOk && interestOk);
+  }, [formData, connectionType, selectedSlot, showEntrepreneurship, showClient]);
 
   function toggleArray(field, id) {
     setFormData((prev) => {
@@ -102,7 +175,10 @@ export default function RegistrationForm() {
 
       const payload = {
         ...formData,
-        // normalize
+        connection_type: connectionType,
+        selected_slot: selectedSlot || null,
+        selected_slot_label: selectedSlotInfo ? selectedSlotInfo.timeLabel : null,
+        selected_slot_date: selectedSlotInfo ? selectedSlotInfo.dateLabel : null,
         email: formData.email.trim(),
         phone: formData.phone.trim(),
         first_name: formData.first_name.trim(),
@@ -111,7 +187,6 @@ export default function RegistrationForm() {
         referred_by: formData.referred_by.trim(),
       };
 
-      // Call Supabase Edge Function (server-side insert + email)
       const { data, error: fnError } = await supabase.functions.invoke("register", {
         body: payload,
       });
@@ -141,99 +216,77 @@ export default function RegistrationForm() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-<div className="cardHeader text-center">
+              <div className="cardHeader text-center">
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr auto 1fr",
+                    alignItems: "center",
+                    marginTop: "32px",
+                    marginBottom: "0px",
+                    minHeight: "140px",
+                  }}
+                >
+                  <div />
+                  <img
+                    src={logo}
+                    alt="AnNa Financial Group"
+                    style={{
+                      height: "clamp(100px, 13vw, 150px)",
+                      width: "auto",
+                      objectFit: "contain",
+                      display: "block",
+                      background: "transparent",
+                    }}
+                  />
+                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                    <img
+                      src={agentPhoto}
+                      alt="Financial Agent"
+                      style={{
+                        height: "clamp(100px, 13vw, 150px)",
+                        width: "auto",
+                        objectFit: "contain",
+                        objectPosition: "top center",
+                        background: "transparent",
+                        display: "block",
+                      }}
+                    />
+                  </div>
+                </div>
 
-  {/* ── CHANGE START ─────────────────────────────────────────────────────
-      Layout math:
-        gridTemplateColumns: '1fr  auto  1fr'
-                               ↑    ↑    ↑
-                            left  LOGO  right-half
+                <h1 style={{
+                  fontSize: "23px",
+                  fontWeight: "bold",
+                  color: "#0f172a",
+                  margin: "0 0 10px 0",
+                  lineHeight: 1.2,
+                  textAlign: "center",
+                }}>
+                  Get Started - Registration
+                </h1>
+                <p className="sub2 text-base md:text-lg text-slate-700 mb-4">
+                  We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
+                </p>
+                <p className="sub2 text-base md:text-lg text-slate-700 mb-6">
+                  At <b>AnNa Financial Group</b>, you'll help families secure their tomorrow and advance your career with unlimited potential.
+                </p>
+                <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 mb-6 mx-auto max-w-4xl">
+                  <p className="sub2 text-sm md:text-base text-slate-800 text-center">
+                    ✅ <b>Be your own boss</b> ✅ <b>Flexible schedule</b>
+                  </p>
+                  <p className="sub2 text-sm md:text-base text-slate-800 text-center">
+                    ✅ <b>Unlimited income potential</b> ✅ <b>Make an impact</b>
+                  </p>
+                </div>
+              </div>
 
-      • Logo (auto) is mathematically centred — left 1fr == right 1fr.
-      • Agent photo lives inside the right 1fr column, centred within it.
-        That puts it at exactly 75% of the row —
-        i.e. midway between the logo's right edge and the row's right end.
-  ────────────────────────────────────────────────────────────────────── */}
-  <div
-    style={{
-      display: 'grid',
-      gridTemplateColumns: '1fr auto 1fr',
-      alignItems: 'center',
-      marginTop: '32px',
-      marginBottom: '0px',
-      minHeight: '140px',
-    }}
-  >
-    {/* Col 1 – left spacer (mirrors right col so logo stays dead-centre) */}
-    <div />
-
-    {/* Col 2 – Logo, responsive size using clamp: 100px mobile → 150px desktop */}
-    <img
-      src={logo}
-      alt="AnNa Financial Group"
-      style={{
-        height: 'clamp(100px, 13vw, 150px)',
-        width: 'auto',
-        objectFit: 'contain',
-        display: 'block',
-        background: 'transparent',
-      }}
-    />
-
-    {/* Col 3 – right half; agent centred inside it → sits at 75% of row */}
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <img
-        src={agentPhoto}
-        alt="Financial Agent"
-        style={{
-          height: 'clamp(100px, 13vw, 150px)',
-          width: 'auto',
-          objectFit: 'contain',
-          objectPosition: 'top center',
-          background: 'transparent',
-          display: 'block',
-        }}
-      />
-    </div>
-  </div>
-  {/* ── CHANGE END ─────────────────────────────────────────────────────── */}
-
-  {/* Heading below the logo + photo row */}
-  <h1 style={{
-    fontSize: '23px',
-    fontWeight: 'bold',
-    color: '#0f172a',
-    margin: '0 0 10px 0',
-    lineHeight: 1.2,
-    textAlign: 'center',
-  }}>
-    Get Started - Registration
-  </h1>
-  {/* ── CHANGE END ─────────────────────────────────────────────────────── */}
-  <p className="sub2 text-base md:text-lg text-slate-700 mb-4">
-    We're excited to connect with you and introduce an opportunity that combines purpose with prosperity.
-  </p>
-  <p className="sub2 text-base md:text-lg text-slate-700 mb-6">
-    At <b>AnNa Financial Group</b>, you'll help families secure their tomorrow and advance your career with unlimited potential.
-  </p>
-  {/* Benefits Section */}
-  <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 mb-6 mx-auto max-w-4xl">
-    <p className="sub2 text-sm md:text-base text-slate-800 text-center">
-      ✅ <b>Be your own boss</b> ✅ <b>Flexible schedule</b>
-    </p>
-    <p className="sub2 text-sm md:text-base text-slate-800 text-center">
-      ✅ <b>Unlimited income potential</b> ✅ <b>Make an impact</b>
-    </p>
-  </div>
-
-</div>
-        <form className="cardBody" onSubmit={handleSubmit}>
-                {/* Interest */}
+              <form className="cardBody" onSubmit={handleSubmit}>
+                {/* Interest Type */}
                 <div className="section">
                   <div className="sectionTitle">
                     Interested In Business/Client?<span className="req">*</span>
                   </div>
-
                   <div className="row">
                     {[
                       { id: "entrepreneurship", label: "Entrepreneurship" },
@@ -252,13 +305,11 @@ export default function RegistrationForm() {
                       </label>
                     ))}
                   </div>
-
                   <div className="help">Choose one. Selecting "Both" shows both sections.</div>
                 </div>
 
                 {/* Entrepreneurship & Client – side by side */}
                 <div className="grid2">
-                  {/* Entrepreneurship */}
                   <div className="section">
                     <div className="sectionTitle">Entrepreneurship – Business Opportunity</div>
                     {showEntrepreneurship ? (
@@ -279,7 +330,6 @@ export default function RegistrationForm() {
                     )}
                   </div>
 
-                  {/* Client */}
                   <div className="section">
                     <div className="sectionTitle">Client – Wealth Building Solutions</div>
                     {showClient ? (
@@ -307,9 +357,7 @@ export default function RegistrationForm() {
 
                   <div className="grid2">
                     <div className="field">
-                      <label>
-                        First Name<span className="req">*</span>
-                      </label>
+                      <label>First Name<span className="req">*</span></label>
                       <input
                         type="text"
                         value={formData.first_name}
@@ -317,11 +365,8 @@ export default function RegistrationForm() {
                         placeholder="First name"
                       />
                     </div>
-
                     <div className="field">
-                      <label>
-                        Last Name<span className="req">*</span>
-                      </label>
+                      <label>Last Name<span className="req">*</span></label>
                       <input
                         type="text"
                         value={formData.last_name}
@@ -332,9 +377,7 @@ export default function RegistrationForm() {
                   </div>
 
                   <div className="field" style={{ marginTop: 12 }}>
-                    <label>
-                      Phone Number<span className="req">*</span>
-                    </label>
+                    <label>Phone Number<span className="req">*</span></label>
                     <input
                       type="tel"
                       value={formData.phone}
@@ -344,9 +387,7 @@ export default function RegistrationForm() {
                   </div>
 
                   <div className="field" style={{ marginTop: 12 }}>
-                    <label>
-                      Email<span className="req">*</span>
-                    </label>
+                    <label>Email<span className="req">*</span></label>
                     <input
                       type="email"
                       value={formData.email}
@@ -371,53 +412,149 @@ export default function RegistrationForm() {
                   </div>
                 </div>
 
-                {/* Meeting */}
+                {/* ── HOW WOULD YOU LIKE TO CONNECT? ── */}
                 <div className="section">
-                  <div className="sectionTitle">Meeting Preferences</div>
-
-                  <div className="field">
-                    <label>
-                      Preferred Meeting Day (Select all that apply)<span className="req">*</span>
+                  <div className="sectionTitle">
+                    Ready to Take the Next Step?<span className="req">*</span>
+                  </div>
+                  <div className="help" style={{ marginBottom: 12 }}>
+                    Choose how you'd like to move forward with us — schedule a live Zoom meeting or let us know your general availability.
+                  </div>
+                  <div className="row">
+                    <label className={`connectionPill${connectionType === "zoom_meeting" ? " connectionPillActive" : ""}`}>
+                      <input
+                        type="radio"
+                        name="connection_type"
+                        value="zoom_meeting"
+                        checked={connectionType === "zoom_meeting"}
+                        onChange={() => { setConnectionType("zoom_meeting"); setSelectedSlot(""); }}
+                      />
+                      📅 Book a Live Zoom Meeting
                     </label>
-                    <div className="row">
-                      {DAYS.map((d) => (
-                        <label className="pill" key={d}>
-                          <input
-                            type="checkbox"
-                            checked={formData.preferred_days.includes(d)}
-                            onChange={() => toggleArray("preferred_days", d)}
-                          />
-                          {d}
-                        </label>
+                    <label className={`connectionPill${connectionType === "meeting_preference" ? " connectionPillActive" : ""}`}>
+                      <input
+                        type="radio"
+                        name="connection_type"
+                        value="meeting_preference"
+                        checked={connectionType === "meeting_preference"}
+                        onChange={() => setConnectionType("meeting_preference")}
+                      />
+                      🗓 Set My Meeting Preference
+                    </label>
+                  </div>
+                </div>
+
+                {/* ── ZOOM MEETING SLOT PICKER ── */}
+                {connectionType === "zoom_meeting" && (
+                  <div className="section">
+                    <div className="sectionTitle">
+                      When Can We Connect With You?<span className="req">*</span>
+                    </div>
+                    <div className="help" style={{ marginBottom: 10 }}>
+                      Select one time slot below. All times are in <b>Central Time (CT)</b>.
+                      Available: Mon–Fri 6–8 PM · Sat 10 AM–12 PM &amp; 4–6 PM · Sun 3–6 PM
+                    </div>
+                    <div className="slotList">
+                      {groupedSlots.map((group) => (
+                        <div className="slotDateGroup" key={group.dateLabel}>
+                          <div className="slotDateHeader">{group.dateLabel}</div>
+                          {group.slots.map((slot) => (
+                            <label
+                              className={`slotOption${selectedSlot === slot.value ? " slotOptionActive" : ""}`}
+                              key={slot.value}
+                            >
+                              <input
+                                type="radio"
+                                name="selected_slot"
+                                value={slot.value}
+                                checked={selectedSlot === slot.value}
+                                onChange={() => setSelectedSlot(slot.value)}
+                              />
+                              {slot.timeLabel}
+                            </label>
+                          ))}
+                        </div>
                       ))}
+                    </div>
+                    {selectedSlotInfo && (
+                      <div style={{
+                        marginTop: 10,
+                        padding: "8px 12px",
+                        background: "#f0fdfa",
+                        border: "1px solid var(--brand)",
+                        borderRadius: 10,
+                        fontSize: 13,
+                        color: "var(--brand-dark)",
+                        fontWeight: 600,
+                      }}>
+                        ✅ Selected: {selectedSlotInfo.dateLabel} · {selectedSlotInfo.timeLabel} CT
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── MEETING PREFERENCE (only when selected) ── */}
+                {connectionType === "meeting_preference" && (
+                  <div className="section">
+                    <div className="sectionTitle">Meeting Preferences</div>
+
+                    <div className="field">
+                      <label>
+                        Preferred Meeting Day (Select all that apply)<span className="req">*</span>
+                      </label>
+                      <div className="row">
+                        {DAYS.map((d) => (
+                          <label className="pill" key={d}>
+                            <input
+                              type="checkbox"
+                              checked={formData.preferred_days.includes(d)}
+                              onChange={() => toggleArray("preferred_days", d)}
+                            />
+                            {d}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid2" style={{ marginTop: 12 }}>
+                      <div className="field">
+                        <label>
+                          Preferred Meeting Time<span className="req">*</span>
+                        </label>
+                        <div className="row">
+                          {TIME.map((d) => (
+                            <label className="pill" key={d}>
+                              <input
+                                type="checkbox"
+                                checked={formData.preferred_time.includes(d)}
+                                onChange={() => toggleArray("preferred_time", d)}
+                              />
+                              {d}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="field">
+                        <label>
+                          Referred By<span className="req">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.referred_by}
+                          onChange={(e) => setFormData((p) => ({ ...p, referred_by: e.target.value }))}
+                          placeholder="Name or source"
+                        />
+                      </div>
                     </div>
                   </div>
+                )}
 
-                  <div className="grid2" style={{ marginTop: 12 }}>
+                {/* Referred By for Zoom meeting path */}
+                {connectionType === "zoom_meeting" && (
+                  <div className="section">
                     <div className="field">
-                      <label>
-                        Preferred Meeting Time<span className="req">*</span>
-                      </label>
-                    <div className="row">
-                      {TIME.map((d) => (
-                        <label className="pill" key={d}>
-                          <input
-                            type="checkbox"
-                            checked={formData.preferred_time.includes(d)}
-                            onChange={() => toggleArray("preferred_time", d)}
-                          />
-                          {d}
-                        </label>
-                      ))}
-                    </div>
-
-
-                    </div>
-
-                    <div className="field">
-                      <label>
-                        Referred By<span className="req">*</span>
-                      </label>
+                      <label>Referred By<span className="req">*</span></label>
                       <input
                         type="text"
                         value={formData.referred_by}
@@ -426,28 +563,34 @@ export default function RegistrationForm() {
                       />
                     </div>
                   </div>
+                )}
 
-                  <div className="actions">
-                    <button className="btn" type="submit" disabled={submitting}>
-                      {submitting ? (
-                        <>
-                          <Loader2 size={18} className="spin" />
-                          Submitting...
-                        </>
-                      ) : (
-                        "Submit Registration"
-                      )}
-                    </button>
+                <div className="actions">
+                  <button className="btn" type="submit" disabled={submitting}>
+                    {submitting ? (
+                      <>
+                        <Loader2 size={18} className="spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      "Submit Registration"
+                    )}
+                  </button>
 
-                    {!canSubmit ? (
-                      <div className="help" style={{ marginTop: 10 }}>
-                        Tip: required fields include interest type, at least one selection in the enabled section(s),
-                        name, phone, email, meeting day(s), time, and referred-by.
-                      </div>
-                    ) : null}
+                  {!canSubmit ? (
+                    <div className="help" style={{ marginTop: 10 }}>
+                      Tip: required fields include interest type, at least one selection in the enabled section(s),
+                      name, phone, email,
+                      {connectionType === "zoom_meeting"
+                        ? " a selected meeting slot,"
+                        : connectionType === "meeting_preference"
+                        ? " meeting day(s) and time,"
+                        : " your connection preference,"}
+                      {" "}and referred-by.
+                    </div>
+                  ) : null}
 
-                    {error ? <div className="error">{error}</div> : null}
-                  </div>
+                  {error ? <div className="error">{error}</div> : null}
                 </div>
               </form>
             </motion.div>
@@ -466,13 +609,36 @@ export default function RegistrationForm() {
               </div>
               <p className="sub1" style={{ margin: 0 }}>
                 {emailSent ? (
-                  <>A confirmation email has been sent to <b>{formData.email}</b>. Please check your inbox or spam folder for the confirmation email.</>
+                  connectionType === "zoom_meeting" ? (
+                    <>
+                      A confirmation email with your <b>Zoom meeting calendar invite</b> has been sent to{" "}
+                      <b>{formData.email}</b>. Please check your inbox and add the event to your calendar.
+                    </>
+                  ) : (
+                    <>
+                      A confirmation email has been sent to <b>{formData.email}</b>. Please check your inbox or spam folder.
+                    </>
+                  )
                 ) : (
                   <>Registration received! We weren't able to send your confirmation email yet, but we'll reach out to you soon.</>
                 )}
               </p>
+              {connectionType === "zoom_meeting" && selectedSlotInfo && (
+                <div style={{
+                  margin: "14px auto 0",
+                  padding: "12px 16px",
+                  background: "#f0fdfa",
+                  border: "1px solid var(--brand)",
+                  borderRadius: 12,
+                  maxWidth: 480,
+                  fontSize: 14,
+                  color: "var(--brand-dark)",
+                }}>
+                  📅 <b>Your Zoom session:</b> {selectedSlotInfo.dateLabel} · {selectedSlotInfo.timeLabel} CT
+                </div>
+              )}
               <p className="sub2" style={{ marginTop: 10 }}>
-               We'll reach out to you soon. Thanks for choosing <b>AnNa Financial Group</b>!
+                We'll reach out to you soon. Thanks for choosing <b>AnNa Financial Group</b>!
               </p>
             </motion.div>
           )}
