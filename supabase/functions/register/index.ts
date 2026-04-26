@@ -408,14 +408,36 @@ Deno.serve(async (req) => {
     email: String(body.email).trim(),
     profession: String(body.profession ?? "").trim(),
     preferred_days: body.preferred_days ?? [],
-    preferred_time: preferredTimeNorm,
+    preferred_time: preferredTimeNorm ?? "",
     referred_by: String(body.referred_by).trim(),
     connection_type: connectionType,
     selected_slot: body.selected_slot ?? null,
     selected_slot_label: body.selected_slot_label ?? null,
   };
 
-  const { error: dbErr } = await supabase.from("client_registrations").insert(payloadToInsert);
+  // Try inserting with the new columns (requires migration 002).
+  // If that fails (columns not yet added), fall back to the original schema.
+  let { error: dbErr } = await supabase.from("client_registrations").insert(payloadToInsert);
+
+  if (dbErr) {
+    const basePayload = {
+      status: payloadToInsert.status,
+      interest_type: payloadToInsert.interest_type,
+      business_opportunities: payloadToInsert.business_opportunities,
+      wealth_solutions: payloadToInsert.wealth_solutions,
+      first_name: payloadToInsert.first_name,
+      last_name: payloadToInsert.last_name,
+      phone: payloadToInsert.phone,
+      email: payloadToInsert.email,
+      profession: payloadToInsert.profession,
+      preferred_days: payloadToInsert.preferred_days,
+      preferred_time: payloadToInsert.preferred_time ?? "",
+      referred_by: payloadToInsert.referred_by,
+    };
+    const fallback = await supabase.from("client_registrations").insert(basePayload);
+    dbErr = fallback.error;
+  }
+
   if (dbErr) {
     return new Response(JSON.stringify({ ok: false, error: dbErr.message }), {
       status: 500,

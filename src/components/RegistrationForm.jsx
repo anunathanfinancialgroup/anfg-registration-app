@@ -454,27 +454,32 @@ export default function RegistrationForm() {
                       Select one time slot below. All times are in <b>Central Time (CT)</b>.
                       Available: Mon–Fri 6–8 PM · Sat 10 AM–12 PM &amp; 4–6 PM · Sun 3–6 PM
                     </div>
-                    <div className="slotList">
-                      {groupedSlots.map((group) => (
-                        <div className="slotDateGroup" key={group.dateLabel}>
-                          <div className="slotDateHeader">{group.dateLabel}</div>
-                          {group.slots.map((slot) => (
-                            <label
-                              className={`slotOption${selectedSlot === slot.value ? " slotOptionActive" : ""}`}
-                              key={slot.value}
-                            >
-                              <input
-                                type="radio"
-                                name="selected_slot"
-                                value={slot.value}
-                                checked={selectedSlot === slot.value}
-                                onChange={() => setSelectedSlot(slot.value)}
-                              />
-                              {slot.timeLabel}
-                            </label>
-                          ))}
-                        </div>
-                      ))}
+                    <div className="field">
+                      <select
+                        value={selectedSlot}
+                        onChange={(e) => setSelectedSlot(e.target.value)}
+                        style={{
+                          width: "100%",
+                          border: "1px solid var(--line)",
+                          borderRadius: 10,
+                          padding: "10px 12px",
+                          fontSize: 14,
+                          outline: "none",
+                          background: "#fff",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <option value="">— Select a date &amp; time —</option>
+                        {groupedSlots.map((group) => (
+                          <optgroup label={group.dateLabel} key={group.dateLabel}>
+                            {group.slots.map((slot) => (
+                              <option value={slot.value} key={slot.value}>
+                                {slot.timeLabel} CT
+                              </option>
+                            ))}
+                          </optgroup>
+                        ))}
+                      </select>
                     </div>
                     {selectedSlotInfo && (
                       <div style={{
