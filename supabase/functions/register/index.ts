@@ -253,7 +253,7 @@ Deno.serve(async (req) => {
 
     // ── Validate base fields ──────────────────────────────────────────────────
     const missing: string[] = [];
-    for (const k of ["interest_type", "first_name", "last_name", "phone", "email", "referred_by"]) {
+    for (const k of ["interest_type", "first_name", "last_name", "phone", "email"]) {
       // deno-lint-ignore no-explicit-any
       const v = (body as any)[k];
       if (!v || String(v).trim() === "") missing.push(k);
